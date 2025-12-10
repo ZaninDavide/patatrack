@@ -69,7 +69,7 @@
       let d = anchors.distance(point, center)
       let r = radius
       let alpha = calc.asin(r / d)
-      let theta = calc.abs(calc.atan2(center.x - point.x, center.y - point.y))
+      let theta = calc.atan2(center.x - point.x, center.y - point.y)
       let beta1 = -90deg + theta - alpha
       let beta2 = +90deg + theta + alpha
       return (beta1, beta2)
@@ -147,19 +147,26 @@
           gamma1 = zero-threesixty-angle(gamma1)
           gamma2 = zero-threesixty-angle(gamma2)
 
+          let out-point1 = anchors.slide(current, current-radius, 0, rot: gamma1)
+          let out-point2 = anchors.slide(current, current-radius, 0, rot: gamma2)
+
+          // Choose the out-going direction that matches in and out clockwise/counter-clockwise
+          let clockwise1 = {
+            let after-to-out-point = anchors.term-by-term-difference(out-point1, after)
+            let after-to-current = anchors.term-by-term-difference(current, after)
+            let cross-product = after-to-current.x*after-to-out-point.y - after-to-current.y*after-to-out-point.x
+            cross-product < 0 // inverse that before since we go out not in this time
+          }
+          // let clockwise2 = not(clockwise1)
+
           // Choose the out-going direction which minimizes the arc length
-          let gamma = if (
-            angle-between-angles(beta, gamma1, clockwise: clockwise) <
-            angle-between-angles(beta, gamma2, clockwise: clockwise)
-          ) { gamma1 } else { gamma2 }
+          let gamma = if clockwise == clockwise1 { gamma1 } else { gamma2 }
+          let out-point = if clockwise == clockwise1 { out-point1 } else { out-point2 }
 
           // Find mid-point on the circle
           let delta = angle-between-angles(beta, gamma, clockwise: clockwise)
           if clockwise { delta *= -1 }
           let mid-point = anchors.slide(current, current-radius, 0, rot: beta + delta/2)
-
-          // Find out-point on the circle
-          let out-point = anchors.slide(current, current-radius, 0, rot: gamma)
 
           // Draw (2)
           path += cetz.draw.arc-through(

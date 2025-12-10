@@ -28,7 +28,7 @@
 
   let C2 = move(circle(5), 10, 50)
 
-  let my-rope = rope(A("r"), C("tr"), I("br"), C2("t"), A("bl"))
+  let my-rope = rope(A("r"), C("tr"), I("br"), C2("t"), (-50, 50))
   repr(my-rope("repr"))
 
 
