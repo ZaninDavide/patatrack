@@ -1,11 +1,14 @@
 #import "renderer.typ": renderer
 #import "@preview/cetz:0.3.4" as cetz
+#import "../anchors.typ" as anchors
 
 #let wireframe = {
 
-  let draw-rect = (obj, stroke: 1pt) => {
+  let draw-rect = (obj, style: (:)) => {
+    let style = (stroke: auto) + style
+
     let points = obj("anchors")
-    cetz.draw.line(close: true, stroke: stroke,
+    cetz.draw.line(close: true, stroke: style.stroke,
       (points.tl.x, points.tl.y),
       (points.tr.x, points.tr.y),
       (points.br.x, points.br.y),
@@ -13,41 +16,169 @@
     )
   }
 
-  let draw-circle = (obj, stroke: 1pt) => {
+  let draw-circle = (obj, style: (:)) => {
+    let style = (stroke: auto) + style
+    
     let points = obj("anchors")
-    cetz.draw.circle(stroke: stroke,
+    cetz.draw.circle(stroke: style.stroke,
       (points.c.x, points.c.y), 
       radius: obj("data").radius
     )
   }
   
-  let draw-incline = (obj, stroke: 1pt) => {
+  let draw-incline = (obj, style: (:)) => {
+    let style = (stroke: auto) + style
+
     let points = obj("anchors")
-    cetz.draw.line(close: true, stroke: stroke,
+    cetz.draw.line(close: true, stroke: style.stroke,
       (points.tr.x, points.tr.y),
       (points.tl.x, points.tl.y),
       (points.br.x, points.br.y),
     )
   }
   
-  let draw-arrow = (obj, stroke: 1pt) => {
+  let draw-arrow = (obj, style: (:)) => {
+    let style = (stroke: auto) + style
+
     let points = obj("anchors")
-    cetz.draw.line(stroke: stroke,
+    cetz.draw.line(stroke: style.stroke,
       (points.start.x, points.start.y),
       (points.end.x, points.end.y),
       mark: (end: "stealth", fill: black),
     )
   }
   
-  let draw-point = (obj, fill: black) => {
+  let draw-point = (obj, style: (:)) => {
+    let style = (fill: black) + style
+
     let points = obj("anchors")
-    cetz.draw.circle(stroke: none, fill: fill, radius: 1,
+    cetz.draw.circle(stroke: none, fill: style.fill, radius: 1,
       (points.c.x, points.c.y)
     );
   }
   
-  let draw-rope = (obj) => {
-    panic("TODO")
+  let draw-rope = (obj, style: (:)) => {
+    let style = (stroke: auto) + style
+
+    let points = obj("anchors")
+    let radii = obj("data").radii
+    let path = none
+
+    // Utilities
+    let point-circle-tangent-directions(point, center, radius) = {
+      let d = anchors.distance(point, center)
+      let r = radius
+      let alpha = calc.asin(r / d)
+      let theta = calc.abs(calc.atan2(center.x - point.x, center.y - point.y))
+      let beta1 = -90deg + theta - alpha
+      let beta2 = +90deg + theta + alpha
+      return (beta1, beta2)
+    }
+    let zero-threesixty-angle(angle) = 1deg * calc.rem(calc.rem(angle/1deg, 360) + 360, 360)
+    let angle-between-angles(angle1, angle2, clockwise: false) = {
+      // Finds positive angle you have to travel from angle1 to reach angle2
+      let angle1 = zero-threesixty-angle(angle1)
+      let angle2 = zero-threesixty-angle(angle2)
+      // Assume counter-clockwise
+      let delta = if angle2 > angle1 { angle2 - angle1 } else { 360deg - (angle1 - angle2) }
+      // Handle clockwise
+      if clockwise { delta = 360deg - delta }
+      return delta
+    }
+
+    let i = 0
+    let tip = none // tip of the pen
+    while i < obj("data").count {
+      let current = points.at(str(i))
+      let current-radius = radii.at(str(i))
+      let after = if i + 1 < obj("data").count { points.at(str(i + 1)) } else { none }
+      let after-radius = if i + 1 < obj("data").count { radii.at(str(i + 1)) } else { none }
+      
+      if tip == none {
+        // This is the first point: position the tip and do nothing
+        tip = current
+
+      } else if after == none {
+        // This is the last point: draw to it
+        path += cetz.draw.line((tip.x, tip.y), (current.x, current.y))
+        tip = current
+
+      } else if current-radius == 0 {
+        // This point has zero radius: draw to it
+        path += cetz.draw.line((tip.x, tip.y), (current.x, current.y))
+        tip = current
+
+      } else if current-radius != 0 {
+        // This point has a finite radius: draw
+        //  (1) straight line from tip to in-point
+        //  (2) arc from in-point to out-point
+
+        // Find possible in-going directions
+        let (beta1, beta2) = point-circle-tangent-directions(tip, current, current-radius)
+        beta1 = zero-threesixty-angle(beta1)
+        beta2 = zero-threesixty-angle(beta2)
+
+        // Choose ingoing direction according to anchor's rotation
+        let beta = if (
+          calc.abs(beta1 - zero-threesixty-angle(current.rot)) <
+          calc.abs(beta2 - zero-threesixty-angle(current.rot))
+        ) { beta1 } else { beta2 }
+        
+        // Find in-point on the circle
+        let in-point = anchors.slide(current, current-radius, 0, rot: beta)
+
+        // Draw (1)
+        path += cetz.draw.line((tip.x, tip.y), (in-point.x, in-point.y))
+
+        // Determine if we are traveling clockwise or counter-clockwise
+        let clockwise = {
+          let tip-to-current = anchors.term-by-term-difference(current, tip)
+          let tip-to-in-point = anchors.term-by-term-difference(in-point, tip)
+          let cross-product = tip-to-current.x*tip-to-in-point.y - tip-to-current.y*tip-to-in-point.x
+          cross-product > 0
+        } 
+
+        // Find the possible outgoing directions
+        if after-radius == 0 {
+          // The next point is a point of zero radius
+          
+          // Find the possible out-going directions
+          let (gamma1, gamma2) = point-circle-tangent-directions(after, current, current-radius)
+          gamma1 = zero-threesixty-angle(gamma1)
+          gamma2 = zero-threesixty-angle(gamma2)
+
+          // Choose the out-going direction which minimizes the arc length
+          let gamma = if (
+            angle-between-angles(beta, gamma1, clockwise: clockwise) <
+            angle-between-angles(beta, gamma2, clockwise: clockwise)
+          ) { gamma1 } else { gamma2 }
+
+          // Find mid-point on the circle
+          let delta = angle-between-angles(beta, gamma, clockwise: clockwise)
+          if clockwise { delta *= -1 }
+          let mid-point = anchors.slide(current, current-radius, 0, rot: beta + delta/2)
+
+          // Find out-point on the circle
+          let out-point = anchors.slide(current, current-radius, 0, rot: gamma)
+
+          // Draw (2)
+          path += cetz.draw.arc-through(
+            (in-point.x, in-point.y), // start
+            (mid-point.x, mid-point.y), // mid
+            (out-point.x, out-point.y) // end
+          )
+
+          tip = out-point
+        } else {
+          // The next point is another circle
+          panic("TODO")
+        }
+      }
+
+      i += 1
+    }
+
+    return cetz.draw.merge-path(path, stroke: style.stroke + blue)
   }
 
   renderer((
@@ -61,7 +192,7 @@
 }
 
 #let debug = {
-  let draw-anchors(obj) = {
+  let draw-anchors(obj, style: (:)) = {
     for anc in obj("anchors").values() {
       // normal
       cetz.draw.line(

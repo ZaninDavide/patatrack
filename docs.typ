@@ -3,9 +3,8 @@
 #let draw(..objs, debug: false) = {
   import "@preview/cetz:0.3.4" as cetz
   cetz.canvas(length: 0.5mm, {
-    let objs = objs.pos()
-    patatrack.renderers.cetz.wireframe(objs).flatten()
-    patatrack.renderers.cetz.debug(objs).flatten()
+    patatrack.renderers.cetz.wireframe(..objs).flatten()
+    if debug { patatrack.renderers.cetz.debug(..objs).flatten() }
   })
 }
 
@@ -22,15 +21,19 @@
   C = rotate(move(C, 30, 15), -23deg)
 
   let weight = rotate(arrow(A("c"), 40, angle: 90deg), -90deg)
-  let friction = rotate(arrow(A("c"), 30), -90deg)
-  let normal = arrow(A("c"), 25)
+  let friction = rotate(arrow(A("c"), 45), -90deg)
+  let normal = arrow(A("c"), 35)
   let P = point(anchors.x-inter-y(A("c"), I("tr")))
   let Q = point(anchors.lerp(P, I("rt"), 50%))
 
-  let my-rope = rope(A("r"), C("tr"), I("br"))
+  let C2 = move(circle(5), 10, 50)
+
+  let my-rope = rope(A("r"), C("tr"), I("br"), C2("t"), A("bl"))
   repr(my-rope("repr"))
 
-  draw(I, A, B, C, weight, friction, normal, P, Q, debug: true)
+
+
+  draw(I, A, B, C, weight, friction, normal, P, Q, C2, my-rope, stroke: 1pt, debug: false)
 }
 
 #{

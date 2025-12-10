@@ -141,12 +141,13 @@ has a zero radii that the rope passes through the anchor's location. If the anch
 the first or last anchor, the rope passes through the anchor's location even if a 
 non-zero radii is specified. If the rope can wrap around an anchors' location with 
 positive radii in two ways than the rotation of the anchor dictates the direction in 
-which the rope wraps around it. The anchor specifies a coordinate system in which we
-can measure angle from 0 to 2pi. Every wrap-around direction is associated with a 
-unique range of angles between 0 and 2pi that describes the arc of circumference 
-traveled by the rope. The wrap-around direction chosen is the one whose associate 
-range of angles has the lowest median angle. _Intuitively, the rope wants to wrap
-from the top of the local coordinate system_.
+which the rope wraps around it. Every way of going around the circle has a unique
+starting point where the straight line becomes a curve. Each of this points lies
+on the circumference described by the anchor location and radius.
+Therefore each of this points describes an outgoing direction looking from the
+center of the circle. The wrap-around direction chosen is the one whose starting 
+outgoing direction is best aligned with the normal of the anchors.
+_Intuitively, the rope wants to wrap from the direction pointed by anchors rotation_.
 The heavy lifting of computing the wrapping is done by whatever drawing function
 will create the drawing: the rope object itself is just a container of information.
 
