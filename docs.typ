@@ -32,8 +32,14 @@
 
   let my-rope = rope(A("r"), C("tr"), I("br"), C2("t"), C3("r"), C4("t"), I("bl"), (20, -10))
 
-  // draw(I, A, B, C, weight, friction, normal, P, Q, C2, C3, C4, my-rope, stroke: 1pt, debug: true)
-  draw(my-rope, stroke: 1pt, debug: true)
+  draw(I, A, B, C, weight, friction, normal, P, Q, C2, C3, C4, my-rope, stroke: 1pt)
+}
+
+#{
+  import patatrack: *
+  let C = move(circle(10), 50, 50)
+  let R = rope((0,0), C("t"), (100, 150), (100, 0))
+  draw(C, R, debug: true)
 }
 
 #{

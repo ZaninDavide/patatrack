@@ -222,14 +222,14 @@ Named arguments lock one coordinate to `anchor1`'s value.
   let a1 = to-anchor(anchor1)
   let a2 = to-anchor(anchor2)
   
-  return anchor(a1.x, a1.y, calc.atan2(a2.x - a1.x, a2.y - a1.x))
+  return anchor(a1.x, a1.y, calc.atan2(a2.x - a1.x, a2.y - a1.y))
 }
 
 #let look-from(anchor1, anchor2) = {
   let a1 = to-anchor(anchor1)
   let a2 = to-anchor(anchor2)
   
-  return anchor(a1.x, a1.y, calc.atan2(a1.x - a2.x, a1.y - a2.x))
+  return anchor(a1.x, a1.y, calc.atan2(a1.x - a2.x, a1.y - a2.y))
 }
 
 

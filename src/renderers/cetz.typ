@@ -93,7 +93,7 @@
       }    
     }
 
-    return cetz.draw.merge-path(path, stroke: style.stroke + blue)
+    return cetz.draw.merge-path(path, stroke: style.stroke)
   }
 
   renderer((

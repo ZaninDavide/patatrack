@@ -25,11 +25,20 @@ the anchor rotation is ignored and `angle` is used instead.
 }
 
 /*
-Creates an object of type `rope`, representing a one dimensional string that wraps around
+Creates an object of type `"rope"`, representing a one dimensional string that wraps around
 points and circles. 
+``` 
+// Example
+import patatrack: *
+let C = move(circle(10), 50, 50))
+let R = rope((0,0), C, (100, 0))
+```
+The rope object will contain a lot of anchors. First, there's a set of anchors
+named with consecutive numbers that 
 
 Abstractly, a `rope` is completely specified by its anchors
-and an associated list of non-negative radii associated with each anchor. The anchors 
+and an associated list of non-negative radii associated with each anchor. 
+This is in fact the information we provide to the constructor. The anchors 
 location specify the points the rope wraps around and the associated radii specify 
 the distance the rope keeps from the before mentioned points. The anchors rotation is
 used to determine in which direction the rope must go around the points. If the anchor
@@ -40,17 +49,15 @@ positive radii in two ways than the rotation of the anchor dictates the directio
 which the rope wraps around it. Every way of going around the circle has a unique
 starting point where the straight line becomes a curve. Each of this points lies
 on the circumference described by the anchor location and radius.
-Therefore each of this points describes an outgoing direction looking from the
+Therefore each of this points describes a centrifugal direction looking from the
 center of the circle. The wrap-around direction chosen is the one whose starting 
 outgoing direction is best aligned with the normal of the anchors.
-_Intuitively, the rope wants to wrap from the direction pointed by anchors rotation_.
-The heavy lifting of computing the wrapping is done by whatever drawing function
-will create the drawing: the rope object itself is just a container of information.
+_Intuitively, the rope wants to wrap from the direction normal to the anchors rotation_.
 
 This `rope(...)` function takes an arbitrary number of parameters. Every argument
 specifies an anchor and its associated radii. In order to specify an anchor with 
 an associated radii of zero, anything that can be converted to an anchor is fine, 
-but if an anchor of non-zero radii is desired than a `circle` is required: the 
+but if an anchor of non-zero radius is desired than a `circle` is required: the 
 anchor's location is taken to be the circles center, the anchor's rotation is taken 
 to be the rotation of the active anchor of the circle and the wrap-around radius 
 is taken to be the circle's radius. The function returns an object of type `"rope"` with the 
@@ -99,7 +106,10 @@ The first and last anchors appear twice: also renamed "start" and "end" respecti
     return (beta1, beta2)
   }
   let zero-threesixty-angle(angle) = 1deg * calc.rem(calc.rem(angle/1deg, 360) + 360, 360)
-  let angle-between-angles(angle1, angle2, clockwise: false) = {
+  let angle-between-angles(angle1, angle2) = {
+    1deg * calc.abs(calc.rem(angle1/1deg - angle2/1deg + 180, 360) - 180)
+  }
+  let directed-angle-between-angles(angle1, angle2, clockwise) = {
     // Finds positive angle you have to travel from angle1 to reach angle2
     let angle1 = zero-threesixty-angle(angle1)
     let angle2 = zero-threesixty-angle(angle2)
@@ -181,10 +191,10 @@ The first and last anchors appear twice: also renamed "start" and "end" respecti
       beta1 = zero-threesixty-angle(beta1)
       beta2 = zero-threesixty-angle(beta2)
 
-      // Choose ingoing direction according to anchor's rotation
+      // Choose ingoing direction according to anchor's rotation TODO: not working
       let beta = if (
-        calc.abs(beta1 - zero-threesixty-angle(current.rot)) <
-        calc.abs(beta2 - zero-threesixty-angle(current.rot))
+        angle-between-angles(beta1, current.rot + 90deg) <
+        angle-between-angles(beta2, current.rot + 90deg)
       ) { beta1 } else { beta2 }
       
       // Find in-point on the circle
@@ -193,7 +203,7 @@ The first and last anchors appear twice: also renamed "start" and "end" respecti
       // Add anchors for the previous point if necessary
       if radii.at(str(i)) == 0 or i == 1 {
         ancs.insert(str(i) + "o", 
-          anchors.anchor(ancs.at(str(i)).x, ancs.at(str(i)).y, beta - 90deg)
+          anchors.look-at(tip, in-point)
         )
       }
 
@@ -230,14 +240,14 @@ The first and last anchors appear twice: also renamed "start" and "end" respecti
         let out-point = if clockwise == clockwise1 { out-point1 } else { out-point2 }
 
         // Find mid-point on the circle
-        let delta = angle-between-angles(beta, gamma, clockwise: clockwise)
+        let delta = directed-angle-between-angles(beta, gamma, clockwise)
         if clockwise { delta *= -1 }
         let mid-point = anchors.slide(current, current-radius, 0, rot: beta + delta/2)
 
         // Fix rotation
-        in-point.rot = beta - 90deg
-        mid-point.rot = beta + delta/2 - 90deg
-        out-point.rot = gamma - 90deg
+        in-point.rot = beta - 90deg + if clockwise { 0deg } else { 180deg }
+        mid-point.rot = beta + delta/2 - 90deg + if clockwise { 0deg } else { 180deg }
+        out-point.rot = gamma - 90deg + if clockwise { 0deg } else { 180deg }
 
         ancs.insert(str(i+1), current)         // circle center rotated as active anchor
         ancs.insert(str(i+1) + "i", in-point)  // arc-start
@@ -306,8 +316,8 @@ The first and last anchors appear twice: also renamed "start" and "end" respecti
         // current circle
 
         let chooseA = (
-          calc.abs(kappaA - zero-threesixty-angle(after.rot)) <
-          calc.abs(kappaB - zero-threesixty-angle(after.rot))
+          angle-between-angles(kappaA, after.rot + 90deg) <
+          angle-between-angles(kappaB, after.rot + 90deg)
         )
 
         // let kappa = zero-threesixty-angle( if chooseA { kappaA } else { kappaB } )
@@ -318,14 +328,14 @@ The first and last anchors appear twice: also renamed "start" and "end" respecti
         // Now it's the same code as before to create the arc
 
         // Find mid-point on the circle
-        let delta = angle-between-angles(beta, gamma, clockwise: clockwise)
+        let delta = directed-angle-between-angles(beta, gamma, clockwise)
         if clockwise { delta *= -1 }
         let mid-point = anchors.slide(current, current-radius, 0, rot: beta + delta/2)
 
         // Fix rotation
-        in-point.rot = beta - 90deg
-        mid-point.rot = beta + delta/2 - 90deg
-        out-point.rot = gamma - 90deg
+        in-point.rot = beta - 90deg + if clockwise { 0deg } else { 180deg }
+        mid-point.rot = beta + delta/2 - 90deg + if clockwise { 0deg } else { 180deg }
+        out-point.rot = gamma - 90deg + if clockwise { 0deg } else { 180deg }
 
         ancs.insert(str(i+1), current)         // circle center rotated as active anchor
         ancs.insert(str(i+1) + "i", in-point)  // arc-start
@@ -342,8 +352,6 @@ The first and last anchors appear twice: also renamed "start" and "end" respecti
   // ADD START AND END ANCHORS
   ancs.insert("start", ancs.at("1o"))
   ancs.insert("end", ancs.at(str(count) + "i"))
-
-  // TODO: fix anchor rotations
 
   return object("rope", "start", ancs, data: ("count": count, "radii": radii))
 }
