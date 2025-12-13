@@ -1,10 +1,11 @@
 // -----------------------------> LINES
 // This file contains the constructors for all objects with no surface but with spacial extension:
 //  - arrow
+//  - spring
 //  - rope
 
 #import "../anchors.typ" as anchors
-#import "object.typ": object
+#import "object.typ": object, alias
 
 /*
 Creates an object of type "arrow", representing an arrow
@@ -22,6 +23,26 @@ the anchor rotation is ignored and `angle` is used instead.
       "end": anchors.slide(start, length*0, length),
     ),
     data: ("length": length)
+  )
+}
+
+/*
+Creates an object of type "spring", representing an physical spring.
+*/
+#let spring(start, end) = {
+  let start = anchors.to-anchor(start) 
+  let end = anchors.to-anchor(end) 
+
+  start = anchors.x-look-at(start, end)
+  end = anchors.anchor(end.x, end.y, start.rot)
+
+  return object("spring", "start", 
+    (
+      "start": start,
+      "c": anchors.lerp(start, end, 50%),
+      "end": end,
+    ),
+    data: ("length": anchors.distance(start, end))
   )
 }
 

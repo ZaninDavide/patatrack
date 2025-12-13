@@ -35,13 +35,14 @@
     "point": draw-anchors,
     "rope": draw-anchors,
     "polygon": draw-anchors,
+    "spring": draw-anchors,
   ))
 }
 
 // The standard renderer for cetz
 #let standard = {
 
-  let draw-rect = (obj, style: (:)) => {
+  let draw-rect(obj, style: (:)) = {
     let style = (stroke: auto, fill: auto) + style
 
     let points = obj("anchors")
@@ -53,7 +54,7 @@
     )
   }
 
-  let draw-circle = (obj, style: (:)) => {
+  let draw-circle(obj, style: (:)) = {
     let style = (stroke: auto, fill: auto) + style
     
     let points = obj("anchors")
@@ -63,7 +64,7 @@
     )
   }
   
-  let draw-incline = (obj, style: (:)) => {
+  let draw-incline(obj, style: (:)) = {
     let style = (stroke: auto, fill: auto) + style
 
     let points = obj("anchors")
@@ -74,7 +75,7 @@
     )
   }
   
-  let draw-arrow = (obj, style: (:)) => {
+  let draw-arrow(obj, style: (:)) = {
     let style = (stroke: auto) + style
 
     let points = obj("anchors")
@@ -85,7 +86,7 @@
     )
   }
   
-  let draw-point = (obj, style: (:)) => {
+  let draw-point(obj, style: (:)) = {
     let style = (
       radius: if style.at("label", default: none) == none { 1 } else { 0 },
       stroke: none,
@@ -124,7 +125,7 @@
     }
   }
   
-  let draw-rope = (obj, style: (:)) => {
+  let draw-rope(obj, style: (:)) = {
     let style = (stroke: auto) + style
 
     let path = none
@@ -174,6 +175,75 @@
     )
   }
 
+  let draw-spring(obj, style: (:)) = {
+    let style = (
+      stroke: auto, 
+      pitch: auto, // distance between windings
+      n: auto, // number of windings
+      pad: auto, // length of flat bit at the start and at the end
+      radius: auto, // size of the windings
+    ) + style
+
+    if style.pitch == auto and style.n == auto {
+      // Default to 10 revolutions
+      style.n = 10
+    } else if style.pitch != auto and style.n != auto {
+      panic("At least one between `n` and `pitch` has to be set to `auto`, but neither is.")
+    }
+
+    // Choose a radius
+    if style.radius == auto {
+      if style.pitch != auto { style.radius = style.pitch }
+      else if style.n != auto { style.radius = obj("data").length / style.n * 1.25 }
+    }
+    // Choose a padding
+    if style.pad == auto { style.pad = style.radius * 0.6 }
+
+    // Calculate space to cover with the zig-zag pattern
+    let free = obj("data").length - style.pad*2
+
+    // Calculate number of windings or pitch if necessary
+    if style.pitch != auto {
+      style.n = calc.floor(free / style.pitch)
+      // Compensate with extra padding for non integer free/pitch ratios
+      style.pad += (free - style.pitch*style.n) / 2
+    } else {
+      style.pitch = free / style.n
+    }
+
+    // Actually draw the string
+    let ancs = obj("anchors")
+
+    let theta = ancs.start.rot
+    let u = (x: +calc.cos(theta), y: calc.sin(theta))
+    let v = (x: -calc.sin(theta), y: calc.cos(theta))
+
+    let padded-start = (x: ancs.start.x + u.x*style.pad, y: ancs.start.y + u.y*style.pad)
+    let padded-end = (x: ancs.end.x - u.x*style.pad, y: ancs.end.y - u.y*style.pad)
+
+    return cetz.draw.line(stroke: style.stroke,
+      // padding
+      (ancs.start.x, ancs.start.y),
+      (padded-start.x, padded-start.y),
+      ..for i in range(0, style.n) {(
+        // higher point
+        (
+          x: padded-start.x + style.pitch*i*u.x + style.pitch/4*u.x + style.radius*v.x, 
+          y: padded-start.y + style.pitch*i*u.y + style.pitch/4*u.y + style.radius*v.y,
+        ),      
+        // lower point
+        (
+          x: padded-start.x + style.pitch*i*u.x + style.pitch*3/4*u.x - style.radius*v.x, 
+          y: padded-start.y + style.pitch*i*u.y + style.pitch*3/4*u.y - style.radius*v.y,
+        )
+      )},
+      // half down
+      // padding
+      (padded-end.x, padded-end.y),
+      (ancs.end.x, ancs.end.y),
+    )
+  }
+
   renderer((
     "rect": draw-rect,
     "circle": draw-circle,
@@ -182,5 +252,6 @@
     "point": draw-point,
     "rope": draw-rope,
     "polygon": draw-polygon,
+    "spring": draw-spring,
   ))
 }

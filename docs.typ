@@ -7,6 +7,24 @@
   import "src/lib.typ" as patatrack: *
   let draw = patatrack.renderers.cetz.standard
 
+  let A = rect(15,15)
+  let B = move(rect(15,15), 50, 0)
+  let k = spring(A("r"), B("l"))
+  let floor = rect(100, 20)
+  floor = place(floor("t"), A("b"))
+  floor = move(floor, 25, 0)
+
+  draw(floor, fill: luma(90%), stroke: none)
+  draw(k, radius: 6, pitch: 4, pad: 3, stroke: 1pt)
+  draw(A, stroke: 2pt, fill: red)
+  draw(B, stroke: 2pt, fill: blue)
+  draw(point(k("c")), label: $k$, anchor: bottom, ly: 15)
+}.flatten())
+
+#canvas(length: 0.5mm, {
+  import "src/lib.typ" as patatrack: *
+  let draw = patatrack.renderers.cetz.standard
+
   let (A, B, F) = 3 * (none, )
   A = rect(50*1.6, 50)
   B = place(rect(25,25)("bl"), A("br"))
@@ -122,75 +140,6 @@
   draw(point(C1("c")), point(C2("c")), point(C3("c")), radius: 2)
   draw(point(A("c")), label: text(fill: white, $m$), ly: 1)
   draw(point(B("c")), label: text(fill: white, $M$))
-  draw(ceiling, fill: luma(90%), stroke: 2pt)
+  draw(ceiling, fill: luma(90%), stroke: none)
 
 }.flatten())
-
-/*
-#let draw(..objs, debug: false) = {
-  import "@preview/cetz:0.3.4" as cetz
-  cetz.canvas(length: 0.5mm, {
-    patatrack.renderers.cetz.wireframe(..objs).flatten()
-    if debug { patatrack.renderers.cetz.debug(..objs).flatten() }
-  })
-}
-
-#{
-  import patatrack: *
-
-  let (I, A, B, C) = (none,)*4;
-  I = incline(150, 20deg)
-  A = rect(50, 30)
-  A = stick(A("bl"), I("tl"))
-  A = slide(A("c"), 30, 0)
-  B = slide(stick(rect(10,10)("bl"),A("tl")), -5, 0)
-  C = match(circle(10)("bl"),I("rt"), rot: false)
-  C = rotate(move(C, 30, 15), -23deg)
-
-  let weight = rotate(arrow(A("c"), 40, angle: 90deg), -90deg)
-  let friction = rotate(arrow(A("c"), 45), -90deg)
-  let normal = arrow(A("c"), 35)
-  let P = point(anchors.x-inter-y(A("c"), I("tr")))
-  let Q = point(anchors.lerp(P, I("rt"), 50%))
-
-  let C2 = move(circle(5), 10, 50)
-  let C3 = move(circle(20), -40, -10)
-  let C4 = move(circle(10), 20, -50)
-
-  let my-rope = rope(A("r"), C("tr"), I("br"), C2("t"), C3("r"), C4("t"), I("bl"), (20, -10))
-
-  draw(I, A, B, C, weight, friction, normal, P, Q, C2, C3, C4, my-rope, stroke: 1pt)
-}
-
-#{
-  import patatrack: *
-  let C = move(circle(10), 50, 50)
-  let R = rope((0,0), C("b"), (100, 150), (100, 0))
-  let F1 = rotate(arrow(R("2i"), 30), +90deg)
-  let F2 = rotate(arrow(R("2o"), 30), -90deg)
-  let F3 = arrow(R("2m"), 35)
-  draw(C, R, F1, F2, F3, debug: false)
-}
-
-#{
-  import patatrack: *
-  let inc = rotate(incline(100, 15deg), 20deg, ref: (0,0))
-  let force = arrow((0,0), 100)
-
-  draw(force, debug: true)
-}
-
-#{
-  import patatrack: *
-  let block = rotate(rect(40, 20), 30deg)
-  let force = arrow(block("c"), 90)
-
-  draw(block, force, debug: true)
-}
-
-#{
-  import patatrack: *
-  draw(rect(10, 10))
-  draw(point((10, 10)), label: "Hello", align: "text")
-}
-*/
