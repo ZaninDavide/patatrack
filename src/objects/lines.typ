@@ -14,10 +14,11 @@ the anchor rotation is ignored and `angle` is used instead.
 */
 #let arrow(start, length, angle: none) = {
   let start = anchors.to-anchor(start) 
-  if angle != none { start = anchors.anchor(start.x, start.y, angle) }
+  if angle != none { start = anchors.anchor(start.x, start.y, angle - 90deg) }
   return object("arrow", "start", 
     (
       "start": start,
+      "c": anchors.slide(start, length*0, length/2),
       "end": anchors.slide(start, length*0, length),
     ),
     data: ("length": length)
@@ -107,6 +108,8 @@ The first and last anchors appear twice: also renamed "start" and "end" respecti
   }
   let zero-threesixty-angle(angle) = 1deg * calc.rem(calc.rem(angle/1deg, 360) + 360, 360)
   let angle-between-angles(angle1, angle2) = {
+    angle1 = zero-threesixty-angle(angle1)
+    angle2 = zero-threesixty-angle(angle2) // because rem can give negative results otherwise
     1deg * calc.abs(calc.rem(angle1/1deg - angle2/1deg + 180, 360) - 180)
   }
   let directed-angle-between-angles(angle1, angle2, clockwise) = {
@@ -162,22 +165,29 @@ The first and last anchors appear twice: also renamed "start" and "end" respecti
       // This is the first point
       ancs.insert(str(i + 1), current)
       if after-radius == 0 {
-        ancs.insert(str(i + 1) + "o", anchors.look-at(current, after))
+        ancs.insert(str(i + 1) + "o", anchors.x-look-at(current, after))
       }
       tip = current
 
     } else if after == none {
       // This is the last point
       ancs.insert(str(i + 1), current)
-      ancs.insert(str(i + 1) + "i", anchors.look-from(current, tip))
-      tip = current
+      ancs.insert(str(i + 1) + "i", anchors.x-look-from(current, tip))
 
+      // Add anchors for the previous point if necessary
+      if i == 1 {
+        ancs.insert(str(i) + "o", 
+          anchors.x-look-at(tip, current)
+        )
+      }
+
+      tip = current
     } else if current-radius == 0 {
       // This point has zero radius (not first not last)
       ancs.insert(str(i + 1), current)
-      ancs.insert(str(i + 1) + "i", anchors.look-from(current, tip))
+      ancs.insert(str(i + 1) + "i", anchors.x-look-from(current, tip))
       if after-radius == 0 {
-        ancs.insert(str(i + 1) + "o", anchors.look-at(current, after))
+        ancs.insert(str(i + 1) + "o", anchors.x-look-at(current, after))
       }
       tip = current
 
@@ -188,8 +198,6 @@ The first and last anchors appear twice: also renamed "start" and "end" respecti
 
       // Find possible in-going directions
       let (beta1, beta2) = point-circle-tangent-directions(tip, current, current-radius)
-      beta1 = zero-threesixty-angle(beta1)
-      beta2 = zero-threesixty-angle(beta2)
 
       // Choose ingoing direction according to anchor's rotation TODO: not working
       let beta = if (
@@ -203,7 +211,7 @@ The first and last anchors appear twice: also renamed "start" and "end" respecti
       // Add anchors for the previous point if necessary
       if radii.at(str(i)) == 0 or i == 1 {
         ancs.insert(str(i) + "o", 
-          anchors.look-at(tip, in-point)
+          anchors.x-look-at(tip, in-point)
         )
       }
 
@@ -244,10 +252,10 @@ The first and last anchors appear twice: also renamed "start" and "end" respecti
         if clockwise { delta *= -1 }
         let mid-point = anchors.slide(current, current-radius, 0, rot: beta + delta/2)
 
-        // Fix rotation
-        in-point.rot = beta - 90deg + if clockwise { 0deg } else { 180deg }
-        mid-point.rot = beta + delta/2 - 90deg + if clockwise { 0deg } else { 180deg }
-        out-point.rot = gamma - 90deg + if clockwise { 0deg } else { 180deg }
+        // Set rotation (it's nicer to output angles between 0deg and 360deg)
+        in-point.rot = zero-threesixty-angle( beta - 90deg + if clockwise { 0deg } else { 180deg } )
+        mid-point.rot = zero-threesixty-angle( beta + delta/2 - 90deg + if clockwise { 0deg } else { 180deg } )
+        out-point.rot = zero-threesixty-angle( gamma - 90deg + if clockwise { 0deg } else { 180deg } )
 
         ancs.insert(str(i+1), current)         // circle center rotated as active anchor
         ancs.insert(str(i+1) + "i", in-point)  // arc-start
@@ -332,10 +340,10 @@ The first and last anchors appear twice: also renamed "start" and "end" respecti
         if clockwise { delta *= -1 }
         let mid-point = anchors.slide(current, current-radius, 0, rot: beta + delta/2)
 
-        // Fix rotation
-        in-point.rot = beta - 90deg + if clockwise { 0deg } else { 180deg }
-        mid-point.rot = beta + delta/2 - 90deg + if clockwise { 0deg } else { 180deg }
-        out-point.rot = gamma - 90deg + if clockwise { 0deg } else { 180deg }
+        // Set rotation (it's nicer to output angles between 0deg and 360deg)
+        in-point.rot = zero-threesixty-angle( beta - 90deg + if clockwise { 0deg } else { 180deg } )
+        mid-point.rot = zero-threesixty-angle( beta + delta/2 - 90deg + if clockwise { 0deg } else { 180deg } )
+        out-point.rot = zero-threesixty-angle( gamma - 90deg + if clockwise { 0deg } else { 180deg } )
 
         ancs.insert(str(i+1), current)         // circle center rotated as active anchor
         ancs.insert(str(i+1) + "i", in-point)  // arc-start

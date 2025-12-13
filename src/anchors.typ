@@ -23,9 +23,12 @@ is the tangent to the surface and the local y-axis is the outgoing normal to the
 #let anchor(x, y, rot) = (x: x, y: y, rot: rot)
 
 /* 
-Tries to convert anything to an anchor
+Tries to convert anything to an anchor. By default,
+the functions panics if `thing` cannot be converted to an anchor,
+but if the named parameter `panic` is set to `false` it will
+silently return `none`, instead of panicking.
 */
-#let to-anchor(thing) = {
+#let to-anchor(thing, panic: true) = {
   if type(thing) == function {
     // THIS IS AN OBJECT
     return thing()
@@ -45,8 +48,15 @@ Tries to convert anything to an anchor
       } else { panic("Cannot convert to anchor: '" + repr(thing) + "'") }
     } else { panic("Cannot convert to anchor: '" + repr(thing) + "'") }
   } else if type(thing) == dictionary { 
-    // THIS IS ALREADY AN ANCHOR
-    return thing 
+    if "x" in thing and "y" in thing {
+      if "rot" in thing {
+        return anchor(thing.x, thing.y, thing.rot) 
+      } else {
+        return anchor(thing.x, thing.y, 0deg)
+      }
+    }
+  } else if not panic {
+    return none
   } else {
     panic("Cannot convert to anchor: '" + repr(thing) + "' of type " + str(type(thing)))
   }
@@ -218,26 +228,22 @@ Named arguments lock one coordinate to `anchor1`'s value.
   return term-by-term-sum(anc, (anc.x*0, anc.y*0, angle))
 }
 
-#let look-at(anchor1, anchor2) = {
+#let x-look-at(anchor1, anchor2) = {
   let a1 = to-anchor(anchor1)
   let a2 = to-anchor(anchor2)
   
   return anchor(a1.x, a1.y, calc.atan2(a2.x - a1.x, a2.y - a1.y))
 }
-
-#let look-from(anchor1, anchor2) = {
-  let a1 = to-anchor(anchor1)
-  let a2 = to-anchor(anchor2)
-  
-  return anchor(a1.x, a1.y, calc.atan2(a1.x - a2.x, a1.y - a2.y))
-}
+#let y-look-from(anchor1, anchor2) = rotate(x-look-at(anchor1, anchor2), 90deg)
+#let x-look-from(anchor1, anchor2) = rotate(x-look-at(anchor1, anchor2), 180deg)
+#let y-look-at(anchor1, anchor2) = rotate(x-look-at(anchor1, anchor2), -90deg)
 
 
 // -----------------------------> ROTO-TRANSLATIONS
 
 /*
-The `pivot` function returns the anchor you get if you take the `target` anchor and rotate it around the `origin` location by the `origin` angle. In other terms, the function creates an anchor that represents the composition of two roto-translations. 
-Named arguments lock one coordinate to the `target`'s value.
+The `pivot` function returns the anchor you get if you take the `target` anchor and rotate it around the `origin` location by `angle`. If `rot` is set to `false` the anchor's rotation
+is fixed to the rotation of `target`.
 */
 #let pivot(target, origin, angle, rot: true) = {
   let target = to-anchor(target)
@@ -253,6 +259,8 @@ Named arguments lock one coordinate to the `target`'s value.
 
 /*
 Linear interpolation between anchors. The field `by` is a `ratio`.
+If `rot` is set to `true` the result's rotation is fixed to the first
+anchor's rotation.
 */
 #let lerp(anchor1, anchor2, by, rot: true) = {
   let a1 = to-anchor(anchor1)

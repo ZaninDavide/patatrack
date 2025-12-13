@@ -14,15 +14,22 @@ object according to the specified style.
 
 A renderer is a function that takes an arbitrary number of
 positional arguments, that are expected to be objects and/or 
-group of objects, and renders them according to
+groups of objects, and renders them according to
 a `dictionary-of-drawing-functions`. The result is an array
-of rendered objects that does not retain grouping (TODO: reconsider). 
+of rendered objects that does not retain grouping. // (TODO: reconsider) 
 The renderer (not the renderer constructor) also takes an arbitrary 
 number of named arguments meant to specify the drawing style. These 
 named arguments will be passed as a dictionary to the named parameter `style` 
 of every drawing-function.
 
-Observations:
+The renderer does also something special: if it is called with no input arguments it returns the 
+whole `dictionary-of-drawing-functions`. First of all, this is useful to retrieve the full
+list of supported types. Moreover, given a renderer `rendererA` and a
+renderer `rendererB`, `renderer(rendererB() + rendererA())` results in a new renderer that tries
+to render with `rendererB` when `rendererA` is unable to do so. 
+
+Remarks:
+ - When a group of objects is given to a renderer all objects are rendered, one by one.
  - This design implies that styling options are shared between all elements
    that are drawn using the same call to a renderer. This has the intended
    consequence that multiple calls to the renderer are required to draw
@@ -35,10 +42,14 @@ Observations:
   let objects = args.pos().flatten()
   let style = args.named()
 
+  if objects.len() == 0 and style.keys().len() == 0 {
+    return dictionary-of-drawing-functions
+  }
+
   return objects.map(obj => {
     // Not an object
     if type(obj) != function {
-      panic("Only objects can be rendered and objects are functions but type " + repr(type(obj)) + " was found")
+      panic("Only objects can be rendered but type " + repr(type(obj)) + " was found.")
     }
     // Unknown object type
     if not(obj("type") in dictionary-of-drawing-functions) {

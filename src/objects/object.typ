@@ -27,7 +27,6 @@ Important design choices:
  - Nothing prevents the definition of anchors named "anchors", "active", "type", "data" or "repr", nevertheless they 
    won't be accessible via the notation `obj("anchor-name")` but rather only via `obj("anchors").at("anchor-name")`.
 */
-
 #let object(obj-type, active, anchors, data: none) = (..args) => {
   let args = args.pos()
   if args.len() == 0 { return anchors.at(active) }
@@ -56,3 +55,17 @@ Important design choices:
   panic("Unknown argument type '" + repr(type(key)) + "', '" + repr(str) + "' was expected.")
 }
 
+/*
+Turns an object constructor into a new constructor that creates
+identical objects but with a different type. This is useful when
+there are two objects that share the same logic but have very
+different rendering routines. This helps reduce the amount of 
+styling options passed to renderers.
+*/
+#let alias(constructor, new-type) = (..args) => {
+  let obj = constructor(..args)
+  let active = obj("active")
+  let anchors = obj("anchors")
+  let data = obj("data")
+  return object(new-type, active, anchors, data: data)
+}

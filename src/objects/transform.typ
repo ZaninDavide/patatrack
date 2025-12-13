@@ -57,6 +57,11 @@ Translates the object in global coordinates. Its equivalent to `slide.with(rot: 
 */
 #let move = slide.with(rot: 0deg)
 
+#let place(obj, target) = {
+  let delta = anchors.term-by-term-difference(target, obj)
+  return move(obj, delta.x, delta.y)
+}
+
 // -----------------------------> ROTATIONS
 
 /*
