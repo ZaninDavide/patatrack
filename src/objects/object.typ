@@ -1,12 +1,12 @@
 /* 
 An object is a collection of anchors with a specified active anchor and some metadata.
-An object `οbj` is represented by a callable function such that:
+An object `obj` is represented by a callable function such that:
  - `obj()` returns the active anchor (equivalent to `obj("anchors").at(obj("active"))`),
  - `obj("anchor-name")` returns an equivalent object but with the specified anchor as active,
  - `obj("anchors")` returns the full dictionary of anchors,
  - `obj("active")` returns the key of the active anchor,
- - `obj("type")` returns the object type (`"line"`, `"rect"`, `"circle"`, etc).
- - `obj("data")` returns the carried metadata.
+ - `obj("type")` returns the object type (`"line"`, `"rect"`, `"circle"`, etc),
+ - `obj("data")` returns the carried metadata,
  - `obj("repr")` returns a dictionary representation of the object meant only for debugging purposes.
 This constructor takes three positional arguments
  - `obj-type`: a `str` that labels the kind of object described by the anchors,
