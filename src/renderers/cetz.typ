@@ -187,6 +187,7 @@
       n: auto, // number of windings
       pad: auto, // length of flat bit at the start and at the end
       radius: auto, // size of the windings
+      curliness: 70%, // set to none for a zig-zag pattern
     ) + style
 
     if style.pitch == auto and style.n == auto {
@@ -219,34 +220,72 @@
     // Actually draw the string
     let ancs = obj("anchors")
 
-    let theta = ancs.start.rot
-    let u = (x: +calc.cos(theta), y: calc.sin(theta))
-    let v = (x: -calc.sin(theta), y: calc.cos(theta))
+    let u = (x: +calc.cos(ancs.start.rot), y: calc.sin(ancs.start.rot))
+    let v = (x: -u.y, y: u.x)
 
     let padded-start = (x: ancs.start.x + u.x*style.pad, y: ancs.start.y + u.y*style.pad)
     let padded-end = (x: ancs.end.x - u.x*style.pad, y: ancs.end.y - u.y*style.pad)
 
-    return cetz.draw.line(stroke: style.stroke,
-      // padding
-      (ancs.start.x, ancs.start.y),
-      (padded-start.x, padded-start.y),
-      ..for i in range(0, style.n) {(
-        // higher point
-        (
-          x: padded-start.x + style.pitch*i*u.x + style.pitch/4*u.x + style.radius*v.x, 
-          y: padded-start.y + style.pitch*i*u.y + style.pitch/4*u.y + style.radius*v.y,
-        ),      
-        // lower point
-        (
-          x: padded-start.x + style.pitch*i*u.x + style.pitch*3/4*u.x - style.radius*v.x, 
-          y: padded-start.y + style.pitch*i*u.y + style.pitch*3/4*u.y - style.radius*v.y,
+    if style.curliness == none {
+      return cetz.draw.line(stroke: style.stroke,
+        // padding
+        (ancs.start.x, ancs.start.y),
+        (padded-start.x, padded-start.y),
+        ..for i in range(0, style.n) {(
+          // higher point
+          (
+            x: padded-start.x + style.pitch*i*u.x + style.pitch/4*u.x + style.radius*v.x, 
+            y: padded-start.y + style.pitch*i*u.y + style.pitch/4*u.y + style.radius*v.y,
+          ),      
+          // lower point
+          (
+            x: padded-start.x + style.pitch*i*u.x + style.pitch*3/4*u.x - style.radius*v.x, 
+            y: padded-start.y + style.pitch*i*u.y + style.pitch*3/4*u.y - style.radius*v.y,
+          )
+        )},
+        // half down
+        // padding
+        (padded-end.x, padded-end.y),
+        (ancs.end.x, ancs.end.y),
+      )
+    } else {
+      let delta = (style.curliness/100% + 1)*style.pitch/2
+      let transformed(x, y) = (padded-start.x + u.x * x + v.x * y, padded-start.y + u.y * x + v.y * y)
+      return cetz.draw.merge-path({
+        cetz.draw.line(
+          (ancs.start.x, ancs.start.y),
+          (padded-start.x, padded-start.y)
         )
-      )},
-      // half down
-      // padding
-      (padded-end.x, padded-end.y),
-      (ancs.end.x, ancs.end.y),
-    )
+        cetz.draw.bezier(
+          transformed(0,0), 
+          transformed(style.pitch/2, -style.radius),
+          transformed(0, -style.radius)
+        )
+        for k in range(1, style.n) {
+          cetz.draw.bezier(
+            transformed(style.pitch*(k - 1/2),-style.radius), 
+            transformed(style.pitch*(k      ), +style.radius), 
+            transformed(style.pitch*(k - 1/2) + delta, -style.radius), 
+            transformed(style.pitch*(k - 1/2) + delta, +style.radius)
+          )
+          cetz.draw.bezier(
+            transformed(style.pitch*(k    ), +style.radius), 
+            transformed(style.pitch*(k+1/2), -style.radius), 
+            transformed(style.pitch*(k+1/2) - delta, +style.radius), 
+            transformed(style.pitch*(k+1/2) - delta, -style.radius)
+          )
+        }
+        cetz.draw.bezier(
+          transformed(style.pitch*(style.n - 1/2), -style.radius), 
+          transformed(style.pitch*(style.n      ), 0),
+          transformed(style.pitch*(style.n      ), -style.radius),
+        )
+        cetz.draw.line(
+          (padded-end.x, padded-end.y),
+          (ancs.end.x, ancs.end.y),
+        )
+      })
+    }
   }
 
   renderer((
