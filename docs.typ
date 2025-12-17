@@ -40,7 +40,7 @@
 
   canvas({
     import "src/lib.typ" as patatrac: *
-    let draw = patatrac.renderers.cetz.standard
+    let draw = patatrac.renderers.cetz.standard()
 
     let sideA = 20
     let sideB = 15
@@ -107,7 +107,7 @@ In this tutorial we will assume that #link("https://typst.app/universe/package/c
 
 #canvas({
   import patatrac: *
-  let draw = patatrac.renderers.cetz.standard
+  let draw = patatrac.renderers.cetz.standard()
   let floor = incline(100, 20deg)
   let A = rect(15, 15)
   let B = rect(15, 15)
@@ -129,16 +129,19 @@ In this tutorial we will assume that #link("https://typst.app/universe/package/c
 Let's start with the boilerplate required to import `patatrac` and `cetz`.
 
 ```typ
-#import "@preview/cetz:0.3.4" as cetz
-#cetz.canvas(length: 0.5mm, {
-  import "@preview/patatrac:0.0.0" as patatrac: *
-  let draw = patatrac.renderers.cetz.standard
+#import "@preview/cetz:0.3.4": canvas
+#import "@preview/patatrac:0.0.0"
 
-  () // Composition & Rendering
+#canvas(length: 0.5mm, {
+  import patatrac: *
+  let draw = renderers.cetz.standard()
+
+  // Composition & Rendering
+  ()
 }.flatten())
 ```
 
-At line 4, we take the cetz standard renderer provided by `patatrac` and rename it to `draw`. The renderer will take care of outputting `cetz` elements that the canvas can print. From now on, we will only show what goes in the place of line 6, but remember that the boilerplate is still there. Let's start by adding the floor to our scene.
+At line 4, we define draw to be the cetz standard renderer provided by `patatrac` without providing any default styling option: we will do it later. The function `draw` will take care of outputting `cetz` elements that the canvas can print. From now on, we will only show what goes in the place of line 9, but remember that the boilerplate is still there. Let's start by adding the floor to our scene.
 
 ```typc
 let floor = rect(100, 20)
@@ -149,7 +152,7 @@ Line 1 creates a new patatrac `object` of type `"rect"`, which under the hood is
 
 #canvas({
   import patatrac: *
-  let draw = patatrac.renderers.cetz.standard
+  let draw = renderers.cetz.standard()
   let floor = rect(100, 20)
   draw(floor)
 }.flatten())
@@ -161,13 +164,14 @@ Every object carries with it a set of anchors. Every anchor is a point in space 
 The anchors are placed both at the vertices and at the centers of the faces of the rectangle and their rotations specify the tangent direction at every point. If you pay attention you will see that the rotation of the anchors is an angle which increases as one rotates counter-clockwise and with zero corresponding to the right direction. If you use the renderer `patatrac.renderers.cetz.debug` you will see exactly where and how the anchors are placed: red corresponds to the tangent (local-$x$) direction and green to the normal (local-$y$) direction.
 
 ```typc
+let debug = renderers.cetz.debug()
 draw(floor)
-patatrac.renderers.cetz.debug(floor)
+debug(floor)
 ```
 #canvas({
   import patatrac: *
-  let draw = patatrac.renderers.cetz.standard
-  let debug = patatrac.renderers.cetz.debug
+  let draw = patatrac.renderers.cetz.standard()
+  let debug = patatrac.renderers.cetz.debug()
   let floor = rect(100, 20)
   draw(floor)
   debug(floor)
@@ -176,13 +180,14 @@ patatrac.renderers.cetz.debug(floor)
 As you can see, the central anchor is drawn a bit bigger and thicker. The reason is that `c` is, by default, what we call the _active anchor_. We can change the active anchor of an object by calling the object itself on the name of the anchor. For example if we instead draw the anchors of the object `floor("t")` what we get is the following.
 
 ```typc
+let debug = renderers.cetz.debug()
 draw(floor)
-patatrac.renderers.cetz.debug(floor("t"))
+debug(floor("t"))
 ```
 #canvas({
   import patatrac: *
-  let draw = patatrac.renderers.cetz.standard
-  let debug = patatrac.renderers.cetz.debug
+  let draw = patatrac.renderers.cetz.standard()
+  let debug = patatrac.renderers.cetz.debug()
   let floor = rect(100, 20)
   draw(floor)
   debug(floor("t"))
@@ -205,7 +210,7 @@ draw(floor, A, B)
 
 #canvas({
   import patatrac: *
-  let draw = patatrac.renderers.cetz.standard
+  let draw = patatrac.renderers.cetz.standard()
   let floor = rect(100, 20)
   let A = rect(15, 15)
   let B = rect(15, 15)
@@ -236,7 +241,7 @@ draw(floor, A, B, k)
 
 #canvas({
   import patatrac: *
-  let draw = patatrac.renderers.cetz.standard
+  let draw = patatrac.renderers.cetz.standard()
   let floor = rect(100, 20)
   let A = rect(15, 15)
   let B = rect(15, 15)
@@ -261,12 +266,11 @@ draw(floor, fill: luma(90%), stroke: none)
 draw(k, radius: 6, pitch: 4, pad: 3)
 draw(A, stroke: 2pt, fill: red)
 draw(B, stroke: 2pt, fill: blue)
-draw(point(k("c")), label: $k$, anchor: bottom, ly: 15)
 ```
 
 #canvas({
   import patatrac: *
-  let draw = patatrac.renderers.cetz.standard
+  let draw = patatrac.renderers.cetz.standard()
   let floor = rect(100, 20)
   let A = rect(15, 15)
   let B = rect(15, 15)
@@ -294,14 +298,14 @@ let B = rect(15, 15)
 A = stick(A("bl"), floor("tl"))
 B = stick(B("br"), floor("tr"))
 
-A = slide(A, -20, 0)
-B = slide(B, +20, 0)
+A = slide(A("c"), +20, 0)
+B = slide(B("c"), -20, 0)
 
 // the rest is the same
 ```
 #canvas({
   import patatrac: *
-  let draw = patatrac.renderers.cetz.standard
+  let draw = patatrac.renderers.cetz.standard()
   let floor = incline(100, 20deg)
   let A = rect(15, 15)
   let B = rect(15, 15)
@@ -309,8 +313,8 @@ B = slide(B, +20, 0)
   A = stick(A("bl"), floor("tl"))
   B = stick(B("br"), floor("tr"))
 
-  A = slide(A, -20, 0)
-  B = slide(B, +20, 0)
+  A = slide(A("c"), +20, 0)
+  B = slide(B("c"), -20, 0)
   
   let k = spring(A("r"), B("l"))
 
@@ -320,29 +324,51 @@ B = slide(B, +20, 0)
   draw(B, stroke: 2pt, fill: blue)
 }.flatten())
 
-What have I done? At line 1, I used an `incline` instead of a rectangle which I create by giving its width and steepness. Then, at lines 5 and 6, I replaced the calls to `place` with an identical call to `stick`. This function, instead of simply translating the object, also rotates it to make sure that its active anchor faces the second anchor. By doing so, I'm sure that the two blocks rest on the incline correctly. Then, at lines 8 and 9, I replaced the calls to `move` with identical (up to a sign) calls to `slide`. This function, instead of translating the objects in the global coordinate system, translates them inside the rotated coordinate system of they're active anchors. By doing so, I make the two blocks slide along the incline surface.
+What have I done? At line 1, I used an `incline` instead of a rectangle which I create by giving its width and steepness. Then, at lines 5 and 6, I replaced the calls to `place` with an identical call to `stick`. This function, instead of simply translating the object, also rotates it to make sure that its active anchor faces the second anchor. By doing so, I'm sure that the two blocks rest on the incline correctly. Then, at lines 8 and 9, I replaced the calls to `move` with identical (up to a change of active anchors) calls to `slide`. This function, instead of translating the objects in the global coordinate system, translates them inside the rotated coordinate system of their active anchors. By doing so, I make the two blocks slide along the incline surface.
 
-Here is the full code.
+The picture is done but we can improve the code a bit. As promised, we have to go back to the boilerplate. Do you remember the line where we defined `draw`? We can put inside the call to `patatrac.renderers.cetz.standard` the information that all rectangles should have `2pt` of stroke and get rid of this information from the calls to `draw` for `A` and `B`. Even if we have only one spring it makes sense to do the same for the styling options of `k`.
 ```typc
-import "@preview/patatrac:0.0.0" as patatrac: *
-let draw = patatrac.renderers.cetz.standard
-
-let floor = incline(100, 20deg)
-let A = rect(15, 15)
-let B = rect(15, 15)
-
-A = stick(A("bl"), floor("tl"))
-B = stick(B("br"), floor("tr"))
-
-A = slide(A, -20, 0)
-B = slide(B, +20, 0)
-
-let k = spring(A("r"), B("l"))
-
+let draw = renderers.cetz.standard(
+  rect: (stroke: 2pt),
+  spring: (radius: 6, pitch: 4, pad: 3),
+)
+```
+```typc
 draw(floor, fill: luma(90%), stroke: none)
-draw(k, radius: 6, pitch: 4, pad: 3)
-draw(A, stroke: 2pt, fill: red)
-draw(B, stroke: 2pt, fill: blue)
+draw(k)
+draw(A, fill: red)
+draw(B, fill: blue)
+```
+Here is the full code.
+```typ
+#import "@preview/cetz:0.3.4": canvas
+#import "@preview/patatrac:0.0.0"
+
+#canvas(length: 0.5mm, {
+  import patatrac: *
+  let draw = renderers.cetz.standard(
+    rect: (stroke: 2pt),
+    spring: (radius: 6, pitch: 4, pad: 3),
+  )
+
+  let floor = incline(100, 20deg)
+  let A = rect(15, 15)
+  let B = rect(15, 15)
+
+  A = stick(A("bl"), floor("tl"))
+  B = stick(B("br"), floor("tr"))
+
+  A = slide(A("c"), +20, 0)
+  B = slide(B("c"), -20, 0)
+
+  let k = spring(A("r"), B("l"))
+
+  draw(floor, fill: luma(90%), stroke: none)
+  draw(k)
+  draw(A, fill: red)
+  draw(B, fill: blue)
+
+}.flatten())
 ```
 
 
@@ -377,7 +403,7 @@ All options where the rotation is not specified default to `0deg`. Moreover, obj
 *_3. Renderers_* are special functions created with a call to `renderer`. A renderer is essentially a machine that takes one or more objects, associates each object to a drawing function according to the object's type and returns the rendered result. If you want to retrieve the dictionary of type-function pairs call the renderer without providing any argument. If you specify named arguments, the renderer will pass them to the drawing functions as styling options.
 
 = Ropes
-Normally, drawing #link("https://en.wikipedia.org/wiki/Atwood_machine")[Atwood machines] tends to be really cumbersome, but with `patatrack` pulleys are a lot of fun to draw, thanks to the mechanics of `rope`s. The main idea behind how ropes work is the following:
+Normally, drawing #link("https://en.wikipedia.org/wiki/Atwood_machine")[Atwood machines] tends to be really cumbersome, but with `patatrack` pulleys are extremely easy to draw, thanks to the mechanics of `rope`s. The main idea behind how ropes work is the following:
 
 #align(center)[_ropes are one dimensional strings that wrap around anchors and circles._]
 
@@ -391,7 +417,7 @@ draw(C, R)
 ```
 #canvas({
   import patatrac: *
-  let draw = patatrac.renderers.cetz.standard
+  let draw = patatrac.renderers.cetz.standard()
   
   let C = circle(20)
   let R = rope((-50, 0), C("b"), (+100, 0))
@@ -427,7 +453,7 @@ Really, there isn't anything more to say about ropes: they just work. Check out 
 
 ```typc
 import "@preview/patatrac:0.0.0" as patatrac: *
-let draw = patatrac.renderers.cetz.standard
+let draw = patatrac.renderers.cetz.standard()
 
 // Composition
 
@@ -508,7 +534,7 @@ draw(ceiling, fill: luma(90%), stroke: none)
 
 #canvas(length: 0.5mm, {
   import "src/lib.typ" as patatrac: *
-  let draw = patatrac.renderers.cetz.standard
+  let draw = patatrac.renderers.cetz.standard()
 
   let ceiling = move(rect(130, 20), 30, 5)
   let radius = 15
@@ -601,7 +627,7 @@ draw(point(F("c"), rot: false), align: bottom, label: math.arrow($F$), ly: 5)
 
 #canvas({
   import "src/lib.typ" as patatrac: *
-  let draw = patatrac.renderers.cetz.standard
+  let draw = patatrac.renderers.cetz.standard()
 
   let A = rect(50*1.6, 50)
   let B = place(rect(25,25)("bl"), A("br"))
@@ -624,7 +650,7 @@ draw(point(F("c"), rot: false), align: bottom, label: math.arrow($F$), ly: 5)
 /*
 #canvas(length: 0.5mm, {
   import "src/lib.typ" as patatrac: *
-  let draw = patatrac.renderers.cetz.standard
+  let draw = patatrac.renderers.cetz.standard()
 
   draw(circle(20), fill: tiling(image("wheel.png"), size: (20mm, 20mm)))
   draw(arrow((0,0, -90deg), 40), stroke: 3pt + red)
