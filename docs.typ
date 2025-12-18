@@ -40,7 +40,15 @@
 
   canvas({
     import "src/lib.typ" as patatrac: *
-    let draw = patatrac.renderers.cetz.standard()
+    let draw = patatrac.renderers.cetz.standard(
+      rect: style => {
+        if "color" in style {
+          style.fill = style.color
+          style.stroke = 2pt + style.color.darken(60%)
+        }
+        style
+      }
+    )
 
     let sideA = 20
     let sideB = 15
@@ -72,8 +80,8 @@
     draw(point(tension2("c"), rot: false), lx: 10, label: math.arrow($T_2$), align: bottom)
     draw(point(C("c")))
     
-    draw(A, fill: blue, stroke: 2pt + blue.darken(60%))
-    draw(B, fill: red, stroke: 2pt + red.darken(60%))
+    draw(A, color: blue)
+    draw(B, color: red)
     draw(point(A("c")), label: text(fill: white, $M$))
     draw(point(B("c")), label: text(fill: white, $m$), ly: 1)
     
@@ -126,6 +134,7 @@ In this tutorial we will assume that #link("https://typst.app/universe/package/c
   draw(B, stroke: 2pt, fill: blue)
 }.flatten())
 
+== Getting started
 Let's start with the boilerplate required to import `patatrac` and `cetz`.
 
 ```typ
@@ -157,11 +166,12 @@ Line 1 creates a new patatrac `object` of type `"rect"`, which under the hood is
   draw(floor)
 }.flatten())
 
+== Introducing anchors
 Every object carries with it a set of anchors. Every anchor is a point in space with a specified orientation. As anticipated, objects are functions. In particular, if you call an object on the string `"anchors"`, a complete dictionary of all its anchors is returned. For example, `floor("anchors")` gives
 
 #raw(repr(patatrac.rect(100,20)("anchors")), lang: "typc")
 
-The anchors are placed both at the vertices and at the centers of the faces of the rectangle and their rotations specify the tangent direction at every point. If you pay attention you will see that the rotation of the anchors is an angle which increases as one rotates counter-clockwise and with zero corresponding to the right direction. If you use the renderer `patatrac.renderers.cetz.debug` you will see exactly where and how the anchors are placed: red corresponds to the tangent (local-$x$) direction and green to the normal (local-$y$) direction.
+As a general rule of thumb, anchors are placed both at the vertices and at the centers of the faces of the objects and their rotations specify the tangent direction at every point. If you pay attention you will see that the rotation of the anchors is an angle which increases as one rotates counter-clockwise and with zero corresponding to the right direction. If you use the renderer `patatrac.renderers.cetz.debug` you will see exactly where and how the anchors are placed: red corresponds to the tangent (local-$x$) direction and green to the normal (local-$y$) direction.
 
 ```typc
 let debug = renderers.cetz.debug()
@@ -195,6 +205,7 @@ debug(floor("t"))
 
 When doing so, we have to remember that Typst functions are pure: don't forget to reassign your objects if you want the active anchor to change "permanently"! 
 
+== Composition
 Now, let's add in the two blocks. First of all, we need to place the blocks on top of the floor. To do so we use the `place` function which takes two objects and gives as a result the first object translated such that its active anchor location overlaps with that of the second object.
 ```typc
 let floor = rect(100, 20)
@@ -289,7 +300,7 @@ draw(B, stroke: 2pt, fill: blue)
   draw(B, stroke: 2pt, fill: blue)
 }.flatten())
 
-Since you are inside a `cetz` canvas you are free to add whatever detail you like to make your picture more expressive. This picture is nice but drawing it without `patatrac` wouldn't have been much harder. I want you to see where `patatrac` shines so stick with me while I exchange the floor for an incline.
+Since you are inside a `cetz` canvas you are free to add whatever detail you like to make your picture more expressive. This picture is nice but drawing it without `patatrac` wouldn't have been much harder (well, drawing the spring is not a piece of cake but bare with me). I want you to see where `patatrac` shines so `stick` with me while I exchange the floor for an incline.
 ```typc
 let floor = incline(100, 20deg)
 let A = rect(15, 15)
@@ -326,6 +337,7 @@ B = slide(B("c"), -20, 0)
 
 What have I done? At line 1, I used an `incline` instead of a rectangle which I create by giving its width and steepness. Then, at lines 5 and 6, I replaced the calls to `place` with an identical call to `stick`. This function, instead of simply translating the object, also rotates it to make sure that its active anchor faces the second anchor. By doing so, I'm sure that the two blocks rest on the incline correctly. Then, at lines 8 and 9, I replaced the calls to `move` with identical (up to a change of active anchors) calls to `slide`. This function, instead of translating the objects in the global coordinate system, translates them inside the rotated coordinate system of their active anchors. By doing so, I make the two blocks slide along the incline surface.
 
+== Defaults
 The picture is done but we can improve the code a bit. As promised, we have to go back to the boilerplate. Do you remember the line where we defined `draw`? We can put inside the call to `patatrac.renderers.cetz.standard` the information that all rectangles should have `2pt` of stroke and get rid of this information from the calls to `draw` for `A` and `B`. Even if we have only one spring it makes sense to do the same for the styling options of `k`.
 ```typc
 let draw = renderers.cetz.standard(

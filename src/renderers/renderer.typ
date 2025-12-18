@@ -82,10 +82,16 @@ Remarks:
         panic("This renderer has no drawing function for objects of type " + repr(obj("type")) + ". The supported object types are " + repr(dictionary-of-drawing-functions.keys()))
       } 
 
-      return dictionary-of-drawing-functions.at(obj("type"))(
-        obj, 
-        style: defaults.at(obj("type"), default: (:)) + style
-      )
+      // Calculate default styling for this object type
+      let final-obj-style = none
+      let default = defaults.at(obj("type"), default: (:))
+      if type(default) == dictionary {
+        final-obj-style = default + style
+      } else if type(default) == function {
+        final-obj-style = default(style)
+      }
+
+      return dictionary-of-drawing-functions.at(obj("type"))(obj, style: final-obj-style)
     })
   }
 }
