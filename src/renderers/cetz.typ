@@ -1,10 +1,10 @@
-#import "renderer.typ": renderer
+#import "../renderers/renderer.typ": renderer
 #import "@preview/cetz:0.3.4" as cetz
 #import "../anchors.typ" as anchors
 
 // A debug renderer for cetz that draws the objects' anchors
 #let debug = {
-  let draw-anchors(obj, style: (:)) = {
+  let draw-anchors(obj, style) = {
     for (key, anc) in obj("anchors") {
       let factor = if key == obj("active") { 1.5 } else { 1 }
       // normal
@@ -43,7 +43,7 @@
 // The standard renderer for cetz
 #let standard = {
 
-  let draw-rect(obj, style: (:)) = {
+  let draw-rect(obj, style) = {
     let style = (stroke: auto, fill: auto) + style
 
     let points = obj("anchors")
@@ -55,7 +55,7 @@
     )
   }
 
-  let draw-circle(obj, style: (:)) = {
+  let draw-circle(obj, style) = {
     let style = (stroke: auto, fill: auto) + style
     
     let points = obj("anchors")
@@ -65,7 +65,7 @@
     )
   }
   
-  let draw-incline(obj, style: (:)) = {
+  let draw-incline(obj, style) = {
     let style = (stroke: auto, fill: auto) + style
 
     let points = obj("anchors")
@@ -76,7 +76,7 @@
     )
   }
   
-  let draw-arrow(obj, style: (:)) = {
+  let draw-arrow(obj, style) = {
     let paint = stroke(style.at("stroke", default: black)).paint
     let style = (
       stroke: auto, 
@@ -91,7 +91,7 @@
     )
   }
   
-  let draw-point(obj, style: (:)) = {
+  let draw-point(obj, style) = {
     let style = (
       radius: if style.at("label", default: none) == none { 1 } else { 0 },
       stroke: none,
@@ -130,7 +130,7 @@
     }
   }
   
-  let draw-rope(obj, style: (:)) = {
+  let draw-rope(obj, style) = {
     let style = (stroke: auto) + style
 
     let path = none
@@ -169,7 +169,7 @@
     return cetz.draw.merge-path(path, stroke: style.stroke)
   }
 
-  let draw-polygon(obj, style: (:)) = {
+  let draw-polygon(obj, style) = {
     let style = (stroke: auto, fill: auto) + style
     
     let ancs = obj("anchors")
@@ -180,7 +180,7 @@
     )
   }
 
-  let draw-spring(obj, style: (:)) = {
+  let draw-spring(obj, style) = {
     let style = (
       stroke: auto, 
       pitch: auto, // distance between windings

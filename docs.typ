@@ -397,7 +397,7 @@ The whole `patatrac` package is structured around three things:
 Let's define them one by one. 
 
 == Anchors
-Anchors are simply dictionaries with three entries `x`, `y` and `rot` that are meant to specify a 2D coordinate system. The values associated with `x` and `y` are either lengths or numbers and the package assumes that this choice is unique for all the anchors used in the drawing. These two entries specify the origin of the local coordinate system on the canvas. `rot` on the other end always takes values of type `angle` and specifies the direction in which the local-x axis is pointing. Whenever `patatrac` expects the argument of a method to be an anchor it automatically calls `anchors.to-anchor` on that argument. This allows you, the end user, to specify anchors in many different styles:
+Anchors are simply dictionaries with three entries `x`, `y` and `rot` that are meant to specify a 2D coordinate system. The values associated with `x` and `y` are either lengths or numbers and the package assumes that this choice is unique for all the anchors used in the drawing. These two entries specify the origin of the local coordinate system on the canvas. `rot` on the other hand always takes values of type `angle` and specifies the direction in which the local-x axis is pointing. Whenever `patatrac` expects the argument of a method to be an anchor it automatically calls `anchors.to-anchor` on that argument. This allows you, the end user, to specify anchors in many different styles:
 - `(x: ..., y: ..., rot: ...)`,
 - `(x: ..., y: ...)`,
 - `(..., ..., ...)`,
@@ -429,16 +429,16 @@ A renderer is a function whose job is to take default styling options and return
 ```typc
 let my-renderer = patatrac.renderers.renderer(
   // drawing functions
-  rect: (obj, style: (:)) => { ... },
-  circle: (obj, style: (:)) => { ... },
+  rect: (obj, style) => { ... },
+  circle: (obj, style) => { ... },
   ...
 )
 ```
-For example, this is the way in which `patatrac.renderers.cetz.standard` is defined. `my-renderer` is not yet ready to render stuff: we need to specify any default styling option. We do this by calling `my-renderer`itself.
+For example, this is the way in which `patatrac.renderers.cetz.standard` is defined. `my-renderer` is not yet ready to render stuff: we need to specify any default styling option. We do this by calling `my-renderer` itself.
 ```typc
 let draw = my-renderer(rect: (stroke: 2pt))
 ```
-The variable `draw` is the function we use to actually render objects. This step where we provide defaults is kept separate from the call to `renderer` so that the end user can put his own defaults into the renderer: the developer should expose `my-renderer` and not `draw`. Defaults that are set by the developer can simply be hardcoded inside the drawing functions; and this is exactly how the package does for its own renderers. Now, use `draw` to print things.
+The variable `draw` is the function we use to actually render objects. This step where we provide defaults is kept separate from the call to `renderer` so that the end user can put his own defaults into the renderer: the developer should expose `my-renderer` and not `draw`. Defaults that are set by the developer can simply be hardcoded inside the drawing functions definitions; and this is exactly how the package does for its own renderers. Now, use `draw` to print things.
 ```typc
 draw(circle(20), fill: red)
 ```

@@ -3,7 +3,7 @@
 //  - point
 
 #import "../anchors.typ" as anchors
-#import "object.typ": object
+#import "../objects/object.typ": object
 
 // An object constituted by a single anchor `at`.
 // If `rot` is set to `false` the anchor's rotation is set to `0deg`. 

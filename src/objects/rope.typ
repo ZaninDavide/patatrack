@@ -1,50 +1,5 @@
-// -----------------------------> LINES
-// This file contains the constructors for all objects with no surface but with spacial extension:
-//  - arrow
-//  - spring
-//  - rope
-
 #import "../anchors.typ" as anchors
-#import "object.typ": object, alias
-
-/*
-Creates an object of type "arrow", representing an arrow
-pointing from the location of the anchor `start` towards the normal
-direction to `start` of total length `length`. If `angle` is not `none`
-the anchor rotation is ignored and `angle` is used instead.
-*/
-#let arrow(start, length, angle: none) = {
-  let start = anchors.to-anchor(start) 
-  if angle != none { start = anchors.anchor(start.x, start.y, angle - 90deg) }
-  return object("arrow", "start", 
-    (
-      "start": start,
-      "c": anchors.slide(start, length*0, length/2),
-      "end": anchors.slide(start, length*0, length),
-    ),
-    data: ("length": length)
-  )
-}
-
-/*
-Creates an object of type "spring", representing an physical spring.
-*/
-#let spring(start, end) = {
-  let start = anchors.to-anchor(start) 
-  let end = anchors.to-anchor(end) 
-
-  start = anchors.x-look-at(start, end)
-  end = anchors.anchor(end.x, end.y, start.rot)
-
-  return object("spring", "start", 
-    (
-      "start": start,
-      "c": anchors.lerp(start, end, 50%),
-      "end": end,
-    ),
-    data: ("length": anchors.distance(start, end))
-  )
-}
+#import "../objects/object.typ": object, alias
 
 /*
 Creates an object of type `"rope"`, representing a one dimensional string that wraps around

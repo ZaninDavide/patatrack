@@ -91,7 +91,7 @@ Remarks:
         final-obj-style = default(style)
       }
 
-      return dictionary-of-drawing-functions.at(obj("type"))(obj, style: final-obj-style)
+      return dictionary-of-drawing-functions.at(obj("type"))(obj, final-obj-style)
     })
   }
 }
