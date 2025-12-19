@@ -92,6 +92,6 @@ Remarks:
       }
 
       return dictionary-of-drawing-functions.at(obj("type"))(obj, final-obj-style)
-    })
+    }).flatten()
   }
 }

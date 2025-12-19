@@ -1,12 +1,11 @@
 #import "../src/lib.typ" as patatrac
-#import "@preview/cetz:0.3.4" as cetz: canvas
 
 #set page(width: 10cm, height: 6cm)
 #set text(size: 15pt)
 
-#place(center + horizon, canvas(length: 0.5mm, {
+#place(center + horizon, patatrac.cetz.canvas(length: 0.5mm, {
   import patatrac: *
-  let draw = patatrac.renderers.cetz.standard(
+  let draw = cetz.standard(
     rect: style => {
       if "color" in style {
         style.fill = style.color
@@ -58,4 +57,4 @@
     coord(I("tr")), 
   )
     
-}.flatten()))
+}))

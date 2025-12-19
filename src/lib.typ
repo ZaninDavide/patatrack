@@ -1,3 +1,4 @@
 #import "objects/mod.typ": *
 #import "anchors.typ" as anchors
-#import "renderers/mod.typ" as renderers
+#import "renderer.typ": renderer
+#import "cetz/mod.typ" as cetz
