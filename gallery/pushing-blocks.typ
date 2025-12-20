@@ -6,6 +6,7 @@
 #place(center + horizon, patatrac.cetz.canvas(length: 0.5mm, {
   import patatrac: *
   let draw = patatrac.cetz.standard()
+  let debug = patatrac.cetz.debug()
 
   let A = rect(50*1.6, 50)
   let B = place(rect(25,25)("bl"), A("br"))

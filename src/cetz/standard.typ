@@ -64,7 +64,7 @@
     ) + style
 
     let align-to-cetz-anchor(align) = (
-            if align in (left, left + horizon) { "west" }
+           if align in (left, left + horizon) { "west" }
       else if align in (right, right + horizon) { "east" }
       else if align in (center, center + horizon) { "center" }
       else if align in (top, top + center) { "north" }
@@ -250,13 +250,13 @@
   }
 
   renderer((
-    "rect": draw-rect,
-    "circle": draw-circle,
-    "incline": draw-incline,
-    "arrow": draw-arrow,
-    "point": draw-point,
-    "rope": draw-rope,
-    "polygon": draw-polygon,
-    "spring": draw-spring,
+    rect: draw-rect,
+    circle: draw-circle,
+    incline: draw-incline,
+    arrow: draw-arrow,
+    point: draw-point,
+    rope: draw-rope,
+    polygon: draw-polygon,
+    spring: draw-spring,
   ))
 }
