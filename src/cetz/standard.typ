@@ -342,7 +342,7 @@
       element-function(
         ..for x in x-values {
           let point = anchors.anchor(
-            (x - data.range.first())*data.scale, 
+            x*data.scale, 
             (data.fn)(x)*data.scale,
             0deg
           )

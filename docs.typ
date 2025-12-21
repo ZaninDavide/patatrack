@@ -296,7 +296,7 @@ draw(B, stroke: 2pt, fill: blue)
   draw(B, stroke: 2pt, fill: blue)
 })
 
-Remember that since you are inside a `cetz` canvas you are free to add whatever detail you like to make your picture more expressive. This picture is nice but drawing it without `patatrac` wouldn't have been much harder (well, drawing the spring is not a piece of cake but bare with me). I want you to see where `patatrac` shines so `stick` with me while I exchange the floor for an incline.
+Remember that since you are inside a `cetz` canvas you are free to add whatever detail you like to make your picture more expressive. This picture is nice but drawing it without `patatrac` wouldn't have been much harder. I want you to see where `patatrac` shines so `stick` with me while I exchange the floor for an incline.
 ```typc
 let floor = incline(100, 20deg)
 let A = rect(15, 15)
