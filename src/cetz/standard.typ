@@ -5,15 +5,82 @@
 // The standard renderer for cetz
 #let standard = {
   let draw-rect(obj, style) = {
-    let style = (stroke: auto, fill: auto) + style
+    let style = (stroke: auto, fill: auto, radius: 0pt) + style
 
     let points = obj("anchors")
-    cetz.draw.line(close: true, stroke: style.stroke, fill: style.fill,
-      (points.tl.x, points.tl.y),
-      (points.tr.x, points.tr.y),
-      (points.br.x, points.br.y),
-      (points.bl.x, points.bl.y), 
-    )
+    let width = obj("data").width
+    let height = obj("data").height
+
+    // Convert the std.rect style dictionary into the cetz.draw.rect style dictionary  
+    let cetz-radius = if type(style.radius) == dictionary {
+      let priority-at(dict, ..options, default: none) = {
+        let options = options.pos()
+        for op in options {
+          if op in dict {
+            return dict.at(op)
+          }
+        }
+        return default
+      }
+      (
+        north-east: priority-at(style.radius, "top-right", "top", "right", "rest", default: 0pt),
+        north-west: priority-at(style.radius, "top-left", "left", "top", "rest", default: 0pt),
+        south-east: priority-at(style.radius, "bottom-right", "right", "bottom", "rest", default: 0pt),
+        south-west: priority-at(style.radius, "bottom-left", "left", "bottom", "rest", default: 0pt),
+      )
+    } else { style.radius }
+
+    if type(style.stroke) != dictionary {
+      // in this case we can use the normal cetz rectangle
+      return cetz.draw.scope({
+        cetz.draw.translate(x: points.c.x, y: points.c.y)
+        cetz.draw.rotate(points.c.rot)
+        cetz.draw.rect(
+            (-width/2, -height/2), 
+            (+width/2, +height/2),
+            radius: cetz-radius,
+            stroke: style.stroke, 
+            fill: style.fill, 
+        )
+      })
+    } else {
+      // since the user wants control over the stroke at a side-per-side level
+      // we need to use the std.rect instead (warning: can be affected by show rules!)
+      return ctx => {
+        let res = cetz.draw.group({
+          cetz.draw.content(
+            (points.c.x, points.c.y),
+            rotate(-points.c.rot, std.rect(
+              stroke: style.stroke, 
+              fill: style.fill, 
+              radius: style.radius,
+              width: if type(width) == length { width } else { width * ctx.length }, 
+              height: if type(height) == length { height } else { height * ctx.length },
+              inset: 0pt,
+              outset: 0pt,
+            ), reflow: true)
+          )
+          // Hidden shape for correct intersections
+          cetz.draw.hide(bounds: true, 
+          cetz.draw.scope({
+            cetz.draw.translate(x: points.c.x, y: points.c.y)
+            cetz.draw.rotate(points.c.rot)
+            cetz.draw.rect(
+              (-width/2, -height/2), 
+              (+width/2, +height/2),
+              radius: cetz-radius,
+            )
+          }))
+        }).at(0)(ctx)
+
+        // Remove intersections with the content
+        res.drawables.at(1).tags.push(cetz.drawable.TAG.mark)
+        res.drawables.at(0).tags.push(cetz.drawable.TAG.mark)
+
+        res
+      }
+    }
+
   }
 
   let draw-circle(obj, style) = {

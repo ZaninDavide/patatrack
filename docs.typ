@@ -422,12 +422,12 @@ let custom = patatrac.objects.object(
 == Renderers
 A renderer is a function whose job is to take default styling options and return a function capable of rendering objects. This function will take one or more objects, associate each object to a drawing function according to the object's type and return the rendered result, all of this while taking care of any styling option. The journey from a set of drawing functions to an actual drawing starts with a call to `renderer`.
 ```typc
-let my-renderer = patatrac.renderer(
+let my-renderer = patatrac.renderer((
   // drawing functions
   rect: (obj, style) => { ... },
   circle: (obj, style) => { ... },
   ...
-)
+))
 ```
 For example, this is the way in which `patatrac.cetz.standard` is defined. `my-renderer` is not yet ready to render stuff: we need to specify any default styling option. We do this by calling `my-renderer` itself.
 ```typc
@@ -435,7 +435,30 @@ let draw = my-renderer(rect: (stroke: 2pt))
 ```
 The variable `draw` is the function we use to actually render objects. This step where we provide defaults is kept separate from the call to `renderer` so that the end user can put his own defaults into the renderer: the developer should expose `my-renderer` and not `draw`. Defaults that are set by the developer can simply be hardcoded inside the drawing functions definitions; and this is exactly how the package does for its own renderers. Now, use `draw` to print things.
 ```typc
-draw(circle(20), fill: red)
+draw(circle(10), fill: blue)
+```
+#align(center, patatrac.cetz.canvas(length: 0.5mm, {
+  let draw = patatrac.cetz.standard()
+  draw(patatrac.circle(10), fill: blue)
+}))
+If you want, you can extract from `my-renderer` the full dictionary of drawing functions that was used to for its definition.
+```typc
+my-renderer("functions")
+```
+
+#{
+  patatrac.renderer((
+    // drawing functions
+    rect: (obj, style) => {},
+    circle: (obj, style) => {},
+  ))("functions")
+}
+
+This allows the user to extend, modify and combine existing renderers if needed. For example, we could start from the `cetz.standard` renderer and override the algorithm for drawing circles.
+```typc
+let my-renderer = renderer(cetz.standard("functions") + (
+  circle: (obj, style) => { ... }
+))
 ```
 
 = Ropes

@@ -61,6 +61,10 @@
   draw(point(C1("c")), point(C2("c")), point(C3("c")), radius: 2)
   draw(point(A("c")), label: text(fill: white, $m$), ly: 1)
   draw(point(B("c")), label: text(fill: white, $M$))
-  draw(ceiling, fill: luma(90%), stroke: none)
-  // draw(ceiling, fill: stripes(luma(90%), 7pt + luma(85%), 20pt), stroke: none)
+
+  import "@preview/fancy-tiling:1.0.0": diagonal-stripes
+  draw(ceiling, 
+    fill: diagonal-stripes(stripe-color: black, size: 10pt, thickness-ratio: 25%, angle: 60deg), 
+    stroke: (bottom: 2pt + black)
+  )
 }))

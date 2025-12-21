@@ -16,10 +16,10 @@
   import "@preview/fancy-tiling:1.0.0": diagonal-stripes
   draw(floor, 
     fill: diagonal-stripes(stripe-color: luma(90%), size: 10pt, thickness-ratio: 50%), 
-    stroke: none
+    stroke: (top: 2pt)
   )
-  draw(A, fill: blue, stroke: 2pt + blue.darken(60%))
-  draw(B, fill: red, stroke: 2pt + red.darken(60%))
+  draw(A, fill: blue, radius: 2pt, stroke: 2pt + blue.darken(60%))
+  draw(B, fill: red, radius: 2pt, stroke: 2pt + red.darken(60%))
   draw(point(A("c")), label: text(fill: white, $M$), fill: white)
   draw(point(B("c")), label: text(fill: white, $m$), fill: white, align: center, ly: 1.5)
   draw(F, stroke: 2pt)
