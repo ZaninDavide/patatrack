@@ -336,7 +336,7 @@
         while x < data.range.last() { (x, ); x += style.epsilon } +
         (data.range.last(), ) +
         data.stops.values().map(to-x)
-      ).sorted()
+      ).sorted().dedup()
     }
     return cetz.draw.merge-path(close: true, stroke: style.stroke, fill: style.fill, {
       element-function(
@@ -377,7 +377,7 @@
         while t < data.range.last() { (t, ); t += style.epsilon } +
         (data.range.last(), ) +
         data.stops.values().map(to-t)
-      ).sorted()
+      ).sorted().dedup()
     }
 
     let element-function = if style.smooth { cetz.draw.hobby } else { cetz.draw.line }

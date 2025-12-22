@@ -580,7 +580,7 @@ Here we are also specifying two points $A$ and $B$, by giving their position on 
 #pagebreak()
 
 = Useful lists
-In this section you'll find a few useful lists. This lists are generated semi-automatically and errors are possible; let me know if you find any. 
+In this section you'll find a few useful lists. These lists are generated semi-automatically and errors are possible; let me know if you find any. 
 
 #let doc(filename) = {
   import "@preview/tidy:0.4.3" as tidy
