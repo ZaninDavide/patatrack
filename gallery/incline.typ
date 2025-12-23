@@ -35,8 +35,8 @@
   let tension2 = arrow(B("t"), 20)
 
   let dotted = tiling(
-    size: (1pt, 1pt), 
-    pad(std.circle(radius: 0.1pt, fill: black, stroke: none), 0.5pt)
+    size: (2pt, 2pt), 
+    pad(std.circle(radius: 0.1pt, fill: black, stroke: none), 1pt)
   )
 
   draw(I, fill: dotted)

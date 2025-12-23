@@ -1,18 +1,20 @@
 #import "src/lib.typ" as patatrac
 
+#let primary = rgb("#f63b3b")
+
 #show title: it => {
-  set text(size: 50pt)
-  align(center, it)
+  set text(size: 50pt, fill: primary)
+  align(center, link("https://github.com/ZaninDavide/patatrac", it))
 }
 
 #show quote: it => {
-  set text(style: "italic", size: 15pt)
+  set text(style: "italic", size: 15pt, fill: primary)
   align(center, pad(it, top: 0pt, bottom: 20pt))
 }
 
 #set text(size: 12pt)
 #set page(margin: (left: 4cm, top: 3cm, bottom: 3cm, right: 4cm), numbering: none)
-#set par(justify: true)
+#set par(justify: true, spacing: 0.8em)
 #set heading(numbering: "1.1")
 #show heading.where(level: 1): it => {
   set text(size: 21pt)
@@ -53,6 +55,8 @@
 }
 
 #place(top + center, scope: "parent", float: true, {
+  v(1fr)
+
   title[patatrac]
 
   v(-20pt)
@@ -64,19 +68,16 @@
   v(-15pt)
 
   quote[
-    the funny sound of something messy\ suddenly collapsing onto itself
+    a user-friendly Typst package for drawing physics\ diagrams
+    fast and without trigonometry
+    // italian onomatopeia describing crashing and cracking
+    // the funny sound of something messy\ suddenly collapsing onto itself
   ]
 
   v(10pt)
+
+  v(3fr)
 })
-
-#block(stroke: (thickness: 0.5pt), inset: 20pt)[
-*Description*: This Typst package provides help with the typesetting of physics diagrams depicting classical mechanical systems. The goal:
-
-#align(center, [_drawing beautiful physics diagrams without trigonometry._])
-
-The workflow is based on a strict separation between the composition and the rendering of the diagrams. The package is 100% #link("https://typst.app/universe/package/cetz")[`cetz`]-compatible.
-]
 
 #pagebreak()
 
@@ -90,6 +91,17 @@ The workflow is based on a strict separation between the composition and the ren
   counter(page).display("1")
   v(1fr)
 })
+
+= Philosophy
+This Typst package provides help with the typesetting of physics diagrams depicting classical mechanical systems. It was born out of necessity, with the intention of filling a gap not only in the Typst ecosystem but more broadly in the space of computer-generated graphics. In particular, there are two ways in which these pictures are drawn traditionally: either using graphic design software with a visual user interface or writing code. Both methods have pros and cons. 
+
+The first approach requires no mathematics -- and in particular no trigonometric calculations -- but generally lacks the precision and repeatability of code. Our goal here is to provide a tool that takes the best of both worlds: the precision of code and the simplicity of visual manipulation. For this reason, writing `patatrack` code should feel like controlling a graphic design software; the scene is built step by step. The real-time compilation offered by Typst really sells this feeling. At the same time, this is not what you get when using graphic libraries directly: commands correspond to draw calls and this pushes you to make somewhat elaborate calculations to determine upfront where everything should be.
+
+Crucially, a feature that no respectable graphic design software lacks is _snapping_: when dragging elements around, this feature makes it easy to place objects in perfect contact with each other. We borrowed this concept and turned it into `place`ing, `match`ing and `stick`ing. Already in the earliest stages, this choice proved fruitful. In fact, code written with `patatrack` was expressive enough to be almost always non-destructive, meaning that tuning values at the start of the code would not break the final picture.
+
+We made the decision to keep composition and rendering (styling) completely separate. This was motivated by the observation that the best and fastest way of styling a diagram is most often messy; there are just too many options that have to be specified. Surely taming this chaos is something `patatrack` should try its best at, but we acknowledge that this messiness is fine as long as it doesn't creep into the logic used for composition. 
+
+This was a rather self-referential discussion whose goal was not to praise the design of this package but rather to establish clear design principles to follow going forward. Any advice or critique is not only welcome but encouraged. If you are ready, why don't you move on to our decidedly more colloquial tutorial? Have fun doing physics!
 
 = Tutorial
 In this tutorial we will assume that `cetz` is the rendering engine of choice, which at the moment is the only one supported out of the box. The goal is to draw the figure below: two boxes connected by a spring laying on a sloped surface. 
@@ -129,7 +141,7 @@ Let's start with the boilerplate required to import `patatrac` and set up a canv
 })
 ```
 
-At line 3, we create a new cetz canvas. At line 5, we define draw to be the cetz standard renderer provided by `patatrac` without giving any default styling option: we will go back to defaults later in the tutorial. The function `draw` will take care of outputting `cetz` elements that the canvas can print. From now on, we will only show what goes in the place of line 7, but remember that the boilerplate is still there. Let's start by adding the floor to our scene.
+At line 3, we create a new cetz canvas. At line 5, we define draw to be the cetz standard renderer provided by `patatrac` without giving any default styling option: we will go back to defaults later in the tutorial. The function `draw` will take care of outputting `cetz` elements that the canvas can print. From now on, we will only show what goes in the place of line 7, but remember that the boilerplate is still there. Let's start by adding a floor to our scene.
 
 ```typc
 let floor = rect(100, 20)
@@ -734,7 +746,7 @@ This renderer is capable of rendering objects of the following types: #patatrac.
  - `stroke`: curve's stroke,
  - `pitch`: distance between rings,
  - `n`: number of rings,
- - `pad`: minimum amount of space between the start and end points of the curve which must be occupied, on each side, by a linear segment,
+ - `pad`: minimum amount of space between at start and at the end of the curve which must be occupied, on each side, by a linear segment,
  - `radius`: radius of the rings,
  - `curliness`: how much the rings are visible (either a `ratio` or `none` to indicate that a zig-zag pattern should be used instead of the default coil-like shape),
 
