@@ -24,6 +24,29 @@
 #show raw.where(block: false): set raw(lang: "typc")
 #show raw.where(block: true): zebraw.with(background-color: luma(96%), numbering-separator: true, lang: false)
 
+#import "@preview/tidy:0.4.3" as tidy
+#let objects-names = {
+  read("src/objects/mod.typ")
+  .matches(regex("#import\s+\"([^\"]+)\""))
+  .filter(obj => obj.captures.at(0) != "object.typ")
+  .map(obj => "src/objects/" + obj.captures.at(0))
+  .sorted()
+  .map(filename => tidy.parse-module(read(filename)).functions.map(f => f.name))
+  .flatten()
+}
+
+#show raw.where(block: false): it => {
+  if it.text in objects-names {
+    link(label(it.text), it)
+  } else if it.text == "cetz.standard" or it.text == "patatrac.cetz.standard" {
+    link(label("cetz.standard"), it)
+  } else if it.text == "cetz.debug" or it.text == "patatrac.cetz.debug" {
+    link(label("cetz.debug"), it)
+  } else {
+    it
+  }
+}
+
 #let canvas = (..args) => {
   set text(size: 15pt)
   align(center, patatrac.cetz.canvas(length: 0.5mm, ..args))
@@ -423,7 +446,6 @@ let my-renderer = renderer(cetz.standard("functions") + (
 
 #pagebreak()
 
-#import "@preview/tidy:0.4.3" as tidy
 #let doc-fun(fun) = raw({
   str(fun.name)
   "("
@@ -445,7 +467,7 @@ let my-renderer = renderer(cetz.standard("functions") + (
 = Objects one by one
 We will now go through the various object constructors one by one. In what follows, we will omit the boilerplate and the rendering stage, in order to focus on composition.
 
-== Rectangles
+== Rectangles <rect>
 The constructor #find-constructor("rect") takes only the width and the height of the rectangle.
 ```typc
 rect(80,300)
@@ -458,7 +480,7 @@ rect(80,300)
   debug(rect(80,30))
 })
 
-== Circles
+== Circles <circle>
 The constructor #find-constructor("circle") takes only the radius of the circle.
 ```typc
 circle(20)
@@ -471,7 +493,7 @@ circle(20)
   debug(circle(20))
 })
 
-== Inclines
+== Inclines <incline>
 The constructor #find-constructor("incline") takes the incline width and the angle between base and hypotenuse.
 ```typc
 incline(80, 20deg)
@@ -484,7 +506,7 @@ incline(80, 20deg)
   debug(incline(80, 20deg))
 })
 
-== Polygons
+== Polygons <polygon>
 The constructor #find-constructor("polygon") takes a series of anchors representing in clockwise order the vertices of a 2D shape.
 ```typc
 polygon((0,0), (40,40), (80, 40))
@@ -497,7 +519,7 @@ polygon((0,0), (40,40), (80, 40))
   debug(polygon((0,0), (40,40), (80, 40)))
 })
 
-== Arrows
+== Arrows <arrow>
 The constructor #find-constructor("arrow") takes an anchor and a length. The arrow is located at the anchor's location and oriented towards the positive $y$ direction of the specified anchor. If the named parameter `angle` is set to something different from `none`, the arrow's orientation is instead determined by its value.
 ```typc
 arrow((0,0,20deg), 20)
@@ -513,7 +535,7 @@ arrow((30,0,20deg), 20, angle: 40deg)
   debug(a, b, fill: orange)
 })
 
-== Springs
+== Springs <spring>
 The constructor #find-constructor("spring") takes two anchors whose location determines where the spring starts and ends.
 ```typc
 spring((0,0), (25,25))
@@ -526,7 +548,7 @@ spring((0,0), (25,25))
   debug(spring((0,0), (25,25)))
 })
 
-== Axes
+== Axes <axes>
 The constructor #find-constructor("axes") takes an anchor and two lengths, for the two axes. The specified lengths are one sided, meaning that the total axis length is double that. If an axis extends into the positive and negative directions by different amounts its length must be specified as an array `(negative-extension, positive-extension)`.
 ```typc
 axes((0,0,30deg), 20, 10)
@@ -545,7 +567,7 @@ axes((160,0,10deg), 0, 30)
 })
 As seen in the last example, a named parameter `rot` can be set to `false` to make the constructor ignore the anchor's rotation.
 
-== Points
+== Points <point>
 The constructor #find-constructor("point") takes a single anchor. A named parameter `rot` can be set to `false` to make the constructor ignore the anchor's rotation.
 ```typc
 point((0,0,30deg))
@@ -561,7 +583,7 @@ point((50,0,30deg), rot: false)
   debug(a, b)
 })
 
-== Ropes
+== Ropes <rope>
 The main idea behind how ropes work is the following:
 
 #align(center)[_ropes are one dimensional strings that wrap around anchors and circles._]
@@ -599,7 +621,7 @@ Ropes provide many different anchors. Anchors are named with increasing whole nu
   [#R("anchors")]
 }
 
-== Terrains
+== Terrains <terrain>
 Terrains are objects that you can use to create arbitrarily shaped surfaces. The constructor #find-constructor("terrain") takes a function describing the profile and its domain, expressed as a tuple `(min, max)`. The named parameter `scale` is a prefactor that is applied to the coordinates before calculating the anchors' positions and before drawing.
 ```typc
 let ground = terrain(
@@ -620,7 +642,7 @@ let ground = terrain(
 })
 Here we are also specifying two points $A$ and $B$, by giving their position on the specified range either as number or ratio. These points are automatically added as anchors tangent to the surface. In order to rotate the anchors correctly `patatrac` needs to differentiate numerically the given function. The named parameter `epsilon` specifies the step size for the incremental ratio used to approximate the derivative. 
 
-== Trajectories
+== Trajectories <trajectory>
 Trajectories are objects that you can use to create arbitrarily shaped curves. The constructor #find-constructor("trajectory") takes a function parametrizing the curve and its domain, expressed as a tuple `(min, max)`.
 ```typc
 let motion = trajectory(
@@ -645,6 +667,81 @@ Here we are also specifying two points $A$ and $B$, by giving their position on 
 
 #pagebreak()
 
+= Renderers
+
+== `patatrac.cetz.debug` <cetz.debug>
+This renderer is capable of rendering objects of the following types: #patatrac.cetz.standard("functions").keys().sorted().map(k => raw(k)).join(", "). The renderer should be used for debugging purposes only. Independently of the object type, the styling options are
+
+- `length`: length of the tangent line,
+- `stroke`: stroke used to draw the tangent and normal lines,
+- `fill`: fill color for the label with the anchor's name.
+
+== `patatrac.cetz.standard` <cetz.standard>
+This renderer is capable of rendering objects of the following types: #patatrac.cetz.standard("functions").keys().sorted().map(k => raw(k)).join(", "). At the moment, this is the only renderer capable of producing final drawings. We will now list all styling options available for each object type, together with a brief description. (These lists are written by hand, please report any mistake.)
+
+`arrow`:
+ - `stroke`: stroke used to draw the arrow body,
+ - `mark`: cetz-style mark used to specify how the tail and the tip of the arrow should look.
+
+`axes`:
+ - `stroke`: x and y axes stroke,
+ - `mark`: x and y axes cetz-style mark,
+ - `xstroke`: x axis stroke,
+ - `xmark`: x axis mark,
+ - `ystroke`: y axis stroke,
+ - `ymark`: y axis mark.
+
+`circle`:
+ - `stroke`: outline stroke,
+ - `fill`: circle's fill,
+
+`incline`:
+ - `stroke`: outline stroke,
+ - `fill`: incline's fill,
+
+`point`:
+ - `radius`: radius of the dot,
+ - `stroke`: stroke of the dot,
+ - `fill`: fill of the dot,
+ - `label`: content of the label,
+ - `align`: alignment of the label with respect to the center of the dot (technically it's the opposite but the label position is what is changing),
+ - `lx`: after-alignment shift of the label in the global x direction,
+ - `ly`: after-alignment shift of the label in the global y direction.
+
+`polygon`:
+ - `stroke`: outline stroke,
+ - `fill`: polygon's fill.
+
+`rect`:
+ - `stroke`: outline stroke (expressed in the style of `std.rect`, see #link("https://typst.app/docs/reference/visualize/rect/#parameters-stroke")[here]),
+ - `fill`: rectangle's fill,
+ - `radius`: how much to round the corners (expressed in the style of `std.rect`, see #link("https://typst.app/docs/reference/visualize/rect/#parameters-radius")[here]).
+
+`rope`:
+ - `stroke`: rope's stroke,
+
+`spring`:
+ - `stroke`: curve's stroke,
+ - `pitch`: distance between rings,
+ - `n`: number of rings,
+ - `pad`: minimum amount of space between the start and end points of the curve which must be occupied, on each side, by a linear segment,
+ - `radius`: radius of the rings,
+ - `curliness`: how much the rings are visible (either a `ratio` or `none` to indicate that a zig-zag pattern should be used instead of the default coil-like shape),
+
+`terrain`:
+ - `stroke`: outline's stroke, 
+ - `fill`: terrain's fill, 
+ - `epsilon`: distance in domain-space between the points used to approximate the graph (can be a `ratio` or either a number or a length, matching the units used for the domain of the function), 
+ - `smooth`: whether to use a hobby curve to smooth between points or interpolate linearly (boolean).
+
+
+`trajectory`:
+ - `stroke`: outline's stroke, 
+ - `epsilon`: distance in domain-space between the points used to approximate the curve (can be a `ratio` or either a number or a length, matching the units used for the domain of the function), 
+ - `smooth`: whether to use a hobby curve to smooth between points or interpolate linearly (boolean).
+
+#pagebreak()
+
 = Useful lists
 In this section you'll find a few useful lists. These lists are generated semi-automatically. 
 
@@ -655,13 +752,13 @@ In this section you'll find a few useful lists. These lists are generated semi-a
   }
 }
 
-== Renderers
+== All renderers
 This is the complete list of available renderers
 
 - `patatrac.cetz.debug` 
 - `patatrac.cetz.standard` 
 
-== Objects
+== All objects and related functions
 Here is the list of all object constructors. These are all available directly under the namespace `patatrac`.
 #{
   let str = read("src/objects/mod.typ")
@@ -678,7 +775,7 @@ Here is the list of all object constructors. These are all available directly un
 Here is the list of all object related functions. These are all available directly under the namespace `patatrac`.
 #list(..doc("src/objects/object.typ"))
 
-== Anchors
+== Anchors related functions
 Under the namespace `patatrac.anchors` you can find
 
 #list(..doc("src/anchors.typ"))
