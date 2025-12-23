@@ -21,7 +21,7 @@
 #let anchor(x, y, rot) = (x: x, y: y, rot: rot)
 
 /// Tries to convert anything to an anchor. By default,
-/// the functions panics if `thing` cannot be converted to an anchor,
+/// the function panics if `thing` cannot be converted to an anchor,
 /// but if the named parameter `panic` is set to `false` it will
 /// silently return `none`, instead of panicking.
 #let to-anchor(thing, panic: true) = {

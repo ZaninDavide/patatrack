@@ -1,3 +1,5 @@
+/// Creates an object.
+/// 
 /// An object is a collection of anchors with a specified active anchor and some metadata.
 /// An object `obj` is represented by a callable function such that:
 ///  - `obj()` returns the active anchor (equivalent to `obj("anchors").at(obj("active"))`),
@@ -108,7 +110,7 @@
 ))
 
 
-/// Translates the object in global coordinates. Its equivalent to `slide.with(rot: 0deg)`
+/// Translates the object in global coordinates. Its equivalent to `slide.with(rot: 0deg)`.
 #let move = slide.with(rot: 0deg)
 
 #let place(obj, target) = {

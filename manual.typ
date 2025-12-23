@@ -446,22 +446,32 @@ let my-renderer = renderer(cetz.standard("functions") + (
 
 #pagebreak()
 
-#let doc-fun(fun) = raw({
-  str(fun.name)
-  "("
-  for (key, value) in fun.args {
-    (str(key) + if "default" in value {
-      ": " + str(value.default)
-    }, )
-  }.join(", ")
-  ")"
-  if fun.return-types != none {
-    " -> "
-    for rt in fun.return-types {
-      str(rt)
+#let doc-fun(fun, description: false) = {
+  raw({
+    str(fun.name)
+    "("
+    for (key, value) in fun.args {
+      (str(key) + if "default" in value {
+        ": " + str(value.default)
+      }, )
+    }.join(", ")
+    ")"
+    if fun.return-types != none {
+      " -> "
+      for rt in fun.return-types {
+        str(rt)
+      }
     }
+  })
+  if description and fun.description != none and fun.description != "" {
+    let add-fullstop(string) = if string.at(-1) == "." { string } else { string + "." } 
+    ". " + eval(
+      "[" + add-fullstop(
+        fun.description.trim().split(regex("\n\s+\n")).at(0).replace("\n", "").trim()
+      )  + "]"
+    )
   }
-})
+}
 #let find-constructor(obj-name) = doc-fun(tidy.parse-module(read("src/objects/" + obj-name + ".typ")).functions.filter(f => f.name == obj-name).at(0))
 
 = Objects one by one
@@ -745,10 +755,10 @@ This renderer is capable of rendering objects of the following types: #patatrac.
 = Useful lists
 In this section you'll find a few useful lists. These lists are generated semi-automatically. 
 
-#let doc(filename) = {
+#let doc(filename, descriptions: false) = {
   let docs = tidy.parse-module(read(filename))
   for fun in docs.functions.sorted(key: fun => fun.name) {
-    (doc-fun(fun),)
+    (doc-fun(fun, description: descriptions),)
   }
 }
 
@@ -773,9 +783,9 @@ Here is the list of all object constructors. These are all available directly un
   )
 }
 Here is the list of all object related functions. These are all available directly under the namespace `patatrac`.
-#list(..doc("src/objects/object.typ"))
+#list(..doc("src/objects/object.typ", descriptions: true))
 
 == Anchors related functions
 Under the namespace `patatrac.anchors` you can find
 
-#list(..doc("src/anchors.typ"))
+#list(..doc("src/anchors.typ", descriptions: true))
