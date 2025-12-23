@@ -1,5 +1,5 @@
 # patatrac
-With this [Typst](https://typst.app) package drawing physics diagrams is faster than ever! No cumbersome trigonometry required! Get started with the introductory tutorial inside the [manual](https://github.com/ZaninDavide/patatrac/blob/main/docs.pdf).
+With this [Typst](https://typst.app) package drawing physics diagrams is faster than ever! No cumbersome trigonometry required! Get started with the introductory tutorial inside the [manual](https://github.com/ZaninDavide/patatrac/blob/main/manual.pdf).
 
 ```typ
 #import "@preview/patatrac:0.0.0"
@@ -13,29 +13,36 @@ With this [Typst](https://typst.app) package drawing physics diagrams is faster 
 ```
 
 ## Gallery
-With patatrac you are free to choose your style. Here are a few examples of what you can do. Click to read the source-code.
+With patatrac you are free to choose your style. Here are a few examples of what you can do.
 
-
-<p align="center">
-<a href="gallery/incline.typ"><img width="500" src="gallery/incline.svg" alt="Incline"></a>
-</p>
-
-<p align="center">
-<a href="gallery/smooth-step.typ"><img width="500" src="gallery/smooth-step.svg" alt="Smooth Step"></a>
-</p>
-
-<p align="center">
-<a href="gallery/falling-ball.typ"><img width="500" src="gallery/falling-ball.svg" alt="Falling Ball"></a>
-</p>
-
-<p align="center">
-<a href="gallery/incline-playful.typ"><img width="500"g src="gallery/incline-playful.svg" alt="Incline Playful"></a>
-</p>
-
-<p align="center">
-<a href="gallery/pulleys.typ"><img width="500" src="gallery/pulleys.svg" alt="Pulley System"></a>
-</p>
-
-<p align="center">
-<a href="gallery/pushing-blocks.typ"><img width="500" src="gallery/pushing-blocks.svg" alt="Pushing Blocks"></a>
-</p>
+<table>
+<tr>
+    <td colspan="2">
+        <b>Gallery: some examples to take inspiration from</b>
+    </td>
+</tr>
+<tr>
+    <td><code><a href="gallery/incline.typ">gallery/incline.typ</code></td>
+    <td><code><a href="gallery/incline-playful.typ">gallery/incline-playful.typ</code></td>
+</tr>
+<tr>
+    <td>
+    <a href="gallery/incline.svg"><img width="100%" src="gallery/incline.svg" alt="Incline"></a>
+    </td>
+    <td>
+    <a href="gallery/incline-playful.svg"><img width="100%"g src="gallery/incline-playful.svg" alt="Incline Playful"></a>
+    </td>
+</tr>
+<tr>
+    <td><code><a href="gallery/smooth-step.typ">gallery/smooth-step.typ</code></td>
+    <td><code><a href="gallery/pulleys.typ">gallery/pulleys.typ</code></td>
+</tr>
+<tr>
+    <td>
+    <a href="gallery/smooth-step.svg"><img width="100%" src="gallery/smooth-step.svg" alt="Smooth Step"></a>
+    </td>
+    <td>
+    <a href="gallery/pulleys.svg"><img width="100%" src="gallery/pulleys.svg" alt="Pulley System"></a>
+    </td>
+</tr>
+</table>
