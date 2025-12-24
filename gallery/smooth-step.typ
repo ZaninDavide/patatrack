@@ -1,4 +1,4 @@
-#import "../src/lib.typ" as patatrac
+#import "@preview/patatrac:0.5.0"
 
 #set page(width: 11cm, height: 6cm)
 #set text(size: 10pt)
