@@ -113,6 +113,7 @@
 /// Translates the object in global coordinates. Its equivalent to `slide.with(rot: 0deg)`.
 #let move = slide.with(rot: 0deg)
 
+/// Translates the object such that its active anchor's location matches the `target`. 
 #let place(obj, target) = {
   let delta = anchors.term-by-term-difference(target, obj)
   return move(obj, delta.x, delta.y)

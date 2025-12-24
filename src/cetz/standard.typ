@@ -97,11 +97,19 @@
     let style = (stroke: auto, fill: auto) + style
 
     let points = obj("anchors")
-    cetz.draw.line(close: true, stroke: style.stroke, fill: style.fill,
-      (points.tr.x, points.tr.y),
-      (points.tl.x, points.tl.y),
-      (points.br.x, points.br.y),
-    )
+    if obj("data").angle > 0deg {
+      cetz.draw.line(close: true, stroke: style.stroke, fill: style.fill,
+        (points.tr.x, points.tr.y),
+        (points.tl.x, points.tl.y),
+        (points.br.x, points.br.y),
+      )
+    } else {
+      cetz.draw.line(close: true, stroke: style.stroke, fill: style.fill,
+        (points.bl.x, points.bl.y),
+        (points.lt.x, points.lt.y),
+        (points.br.x, points.br.y),
+      )
+    }
   }
   
   let draw-arrow(obj, style) = {

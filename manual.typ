@@ -36,9 +36,45 @@
   .map(filename => tidy.parse-module(read(filename)).functions.map(f => f.name))
   .flatten()
 }
+#let object-related-functions-names = {
+  tidy.parse-module(read("src/objects/object.typ")).functions.map(f => f.name)
+}
+#let doc-fun(fun, description: false, label: false) = {
+  {
+    [#raw({
+      str(fun.name)
+      "("
+      for (key, value) in fun.args {
+        (str(key) + if "default" in value {
+          ": " + str(value.default)
+        }, )
+      }.join(", ")
+      ")"
+      if fun.return-types != none {
+        " -> "
+        for rt in fun.return-types {
+          str(rt)
+        }
+      }
+    }).#if label { std.label(fun.name) }]
+    [#" "]
+  }
+  
+  if description and fun.description != none and fun.description != "" {
+    let add-fullstop(string) = if string.at(-1) == "." { string } else { string + "." } 
+    eval(
+      "[" + add-fullstop(
+        fun.description.trim().split(regex("\n\s+\n")).at(0).replace("\n", "").trim()
+      )  + "]"
+    )
+  }
+}
+#let find-constructor(obj-name) = doc-fun(tidy.parse-module(read("src/objects/" + obj-name + ".typ")).functions.filter(f => f.name == obj-name).at(0))
 
 #show raw.where(block: false): it => {
   if it.text in objects-names {
+    link(label(it.text), it)
+  } else if it.text in object-related-functions-names {
     link(label(it.text), it)
   } else if it.text == "cetz.standard" or it.text == "patatrac.cetz.standard" {
     link(label("cetz.standard"), it)
@@ -101,7 +137,7 @@ Crucially, a feature that no respectable graphic design software lacks is _snapp
 
 We made the decision to keep composition and rendering (styling) completely separate. This was motivated by the observation that the best and fastest way of styling a diagram is most often messy; there are just too many options that have to be specified. Surely taming this chaos is something `patatrack` should try its best at, but we acknowledge that this messiness is fine as long as it doesn't creep into the logic used for composition. 
 
-This was a rather self-referential discussion whose goal was not to praise the design of this package but rather to establish clear design principles to follow going forward. Any advice or critique is not only welcome but encouraged. If you are ready, why don't you move on to our decidedly more colloquial tutorial? Have fun doing physics!
+With this discussion, we hoped to establish clear design principles to follow going forward. Any advice or critique is not only welcomed but encouraged: just open an issue on #link("https://github.com/ZaninDavide/patatrac")[github]. If you are ready, why don't you move on to our decidedly more colloquial tutorial? Have fun doing physics!
 
 = Tutorial
 In this tutorial we will assume that `cetz` is the rendering engine of choice, which at the moment is the only one supported out of the box. The goal is to draw the figure below: two boxes connected by a spring laying on a sloped surface. 
@@ -291,7 +327,10 @@ draw(B, stroke: 2pt, fill: blue)
   draw(B, stroke: 2pt, fill: blue)
 })
 
-Remember that since you are inside a `cetz` canvas you are free to add whatever detail you like to make your picture more expressive. This picture is nice but drawing it without `patatrac` wouldn't have been much harder. I want you to see where `patatrac` shines so `stick` with me while I exchange the floor for an incline.
+Remember that since you are inside a `cetz` canvas you are free to add whatever detail you like to make your picture more expressive. 
+
+== Snapping
+This picture is nice but drawing it without `patatrac` wouldn't have been much harder. I want you to see where `patatrac` shines so `stick` with me while I exchange the floor for an incline.
 ```typc
 let floor = incline(100, 20deg)
 let A = rect(15, 15)
@@ -458,34 +497,6 @@ let my-renderer = renderer(cetz.standard("functions") + (
 
 #pagebreak()
 
-#let doc-fun(fun, description: false) = {
-  raw({
-    str(fun.name)
-    "("
-    for (key, value) in fun.args {
-      (str(key) + if "default" in value {
-        ": " + str(value.default)
-      }, )
-    }.join(", ")
-    ")"
-    if fun.return-types != none {
-      " -> "
-      for rt in fun.return-types {
-        str(rt)
-      }
-    }
-  })
-  if description and fun.description != none and fun.description != "" {
-    let add-fullstop(string) = if string.at(-1) == "." { string } else { string + "." } 
-    ". " + eval(
-      "[" + add-fullstop(
-        fun.description.trim().split(regex("\n\s+\n")).at(0).replace("\n", "").trim()
-      )  + "]"
-    )
-  }
-}
-#let find-constructor(obj-name) = doc-fun(tidy.parse-module(read("src/objects/" + obj-name + ".typ")).functions.filter(f => f.name == obj-name).at(0))
-
 = Objects one by one
 We will now go through the various object constructors one by one. In what follows, we will omit the boilerplate and the rendering stage, in order to focus on composition.
 
@@ -527,6 +538,17 @@ incline(80, 20deg)
   draw(incline(80, 20deg))
   debug(incline(80, 20deg))
 })
+If the angle is negative the incline is downhill moving left to right.
+```typc
+incline(80, -20deg)
+```
+#canvas({
+  import patatrac: *
+  let draw = cetz.standard()
+  let debug = cetz.debug()
+  draw(incline(80, -20deg))
+  debug(incline(80, -20deg))
+})
 
 == Polygons <polygon>
 The constructor #find-constructor("polygon") takes a series of anchors representing in clockwise order the vertices of a 2D shape.
@@ -545,17 +567,19 @@ polygon((0,0), (40,40), (80, 40))
 The constructor #find-constructor("arrow") takes an anchor and a length. The arrow is located at the anchor's location and oriented towards the positive $y$ direction of the specified anchor. If the named parameter `angle` is set to something different from `none`, the arrow's orientation is instead determined by its value.
 ```typc
 arrow((0,0,20deg), 20)
-arrow((30,0,20deg), 20, angle: 40deg)
+arrow((30,0,20deg), 20, angle: 20deg)
 ```
 #canvas({
   import patatrac: *
   let draw = cetz.standard()
   let debug = cetz.debug()
   let a = arrow((0,0,20deg), 40)
-  let b = arrow((60,0,20deg), 40, angle: 40deg)
+  let b = arrow((60,0,20deg), 40, angle: 20deg)
   draw(a, b,)
   debug(a, b, fill: orange)
 })
+
+Notice how the arrow orientation is determined differently in the two cases. In the first case the angle specifies the rotation of the anchors' x-axis, in the second case it determines the angle of the anchor's y-axis.
 
 == Springs <spring>
 The constructor #find-constructor("spring") takes two anchors whose location determines where the spring starts and ends.
@@ -575,7 +599,7 @@ The constructor #find-constructor("axes") takes an anchor and two lengths, for t
 ```typc
 axes((0,0,30deg), 20, 10)
 axes((80,0,20deg), (0, 20), 10)
-axes((160,0,10deg), 0, 30)
+axes((160,0,10deg), 30, 0, rot: false)
 ```
 #canvas({
   import patatrac: *
@@ -583,11 +607,28 @@ axes((160,0,10deg), 0, 30)
   let debug = cetz.debug()
   let a = axes((0,0,30deg), 30, 20)
   let b = axes((80,0,20deg), (0,20), 20)
-  let c = axes((160,0,10deg), 0, 30, rot: false)
+  let c = axes((160,0,10deg), 30, 0, rot: false)
   draw(a, b, c)
   debug(a, b, c, fill: orange)
 })
 As seen in the last example, a named parameter `rot` can be set to `false` to make the constructor ignore the anchor's rotation.
+
+_Suggestion_: Apart from actual cartesian axes, this object can be used to represent lines that are normal or tangent to a surface, lines of symmetry or construction lines.
+```typc
+let C = circle(15)
+let normal = axes(C("tl"), 0, 15)
+let tangent = axes(C("tr"), 15, 0)
+```
+#canvas({
+  import patatrac: *
+  let draw = cetz.standard()
+  let debug = cetz.debug()
+  let C = circle(15)
+  let normal = axes(C("tl"), 0, 15)
+  let tangent = axes(C("r"), 15, 0)
+  draw(C, stroke: (dash: "dotted"))
+  draw(normal, tangent)
+})
 
 == Points <point>
 The constructor #find-constructor("point") takes a single anchor. A named parameter `rot` can be set to `false` to make the constructor ignore the anchor's rotation.
@@ -605,10 +646,12 @@ point((50,0,30deg), rot: false)
   debug(a, b)
 })
 
+_Suggestion_: The `cetz.standard()` renderer let's you assign a label to a point. You can use this feature to place text into the scene.
+
 == Ropes <rope>
 The main idea behind how ropes work is the following:
 
-#align(center)[_ropes are one dimensional strings that wrap around anchors and circles._]
+#align(center, pad(5pt)[_ropes are one dimensional strings that wrap around anchors and circles._])
 
 The constructor #find-constructor("rope") requires the list of anchors and circles that 
 you want the rope to wrap around. Since there are two ways in which any given rope can wrap around a circle, the rotation of the active anchor of the circle will tell the rope from which direction to start "orbiting" around the circle.
@@ -767,10 +810,10 @@ This renderer is capable of rendering objects of the following types: #patatrac.
 = Useful lists
 In this section you'll find a few useful lists. These lists are generated semi-automatically. 
 
-#let doc(filename, descriptions: false) = {
+#let doc(filename, descriptions: false, labels: false) = {
   let docs = tidy.parse-module(read(filename))
   for fun in docs.functions.sorted(key: fun => fun.name) {
-    (doc-fun(fun, description: descriptions),)
+    (doc-fun(fun, description: descriptions, label: labels),)
   }
 }
 
@@ -795,7 +838,7 @@ Here is the list of all object constructors. These are all available directly un
   )
 }
 Here is the list of all object related functions. These are all available directly under the namespace `patatrac`.
-#list(..doc("src/objects/object.typ", descriptions: true))
+#list(..doc("src/objects/object.typ", descriptions: true, labels: true))
 
 == Anchors related functions
 Under the namespace `patatrac.anchors` you can find

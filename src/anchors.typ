@@ -245,7 +245,7 @@
 }
 
 /// Linear interpolation between anchors. The field `by` is a `ratio`.
-/// If `rot` is set to `true` the result's rotation is fixed to the first
+/// If `rot` is set to `false` the result's rotation is fixed to the first
 /// anchor's rotation.
 #let lerp(anchor1, anchor2, by, rot: true) = {
   let a1 = to-anchor(anchor1)

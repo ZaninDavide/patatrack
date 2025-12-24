@@ -3,6 +3,7 @@
 
 /// Creates an object of type `"rope"`, representing a one dimensional string that wraps around
 /// points and circles. 
+/// 
 /// ```typc
 /// // Example
 /// import patatrac: *
