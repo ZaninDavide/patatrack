@@ -131,13 +131,13 @@
 = Philosophy
 This Typst package provides help with the typesetting of physics diagrams depicting classical mechanical systems. It was born out of necessity, with the intention of filling a gap not only in the Typst ecosystem but more broadly in the space of computer-generated graphics. In particular, there are two ways in which these pictures are drawn traditionally: either using graphic design software with a visual user interface or writing code. Both methods have pros and cons. 
 
-The first approach requires no mathematics -- and in particular no trigonometric calculations -- but generally lacks the precision and repeatability of code. Our goal here is to provide a tool that takes the best of both worlds: the precision of code and the simplicity of visual manipulation. For this reason, writing `patatrack` code should feel like controlling a graphic design software; the scene is built step by step. The real-time compilation offered by Typst really sells this feeling. At the same time, this is not what you get when using graphic libraries directly: commands correspond to draw calls and this pushes you to make somewhat elaborate calculations to determine upfront where everything should be.
+The first approach requires no mathematics -- and in particular no trigonometric calculations -- but generally lacks the precision and repeatability of code. Our goal here is to provide a tool that takes the best of both worlds: the precision of code and the simplicity of visual manipulation. For this reason, writing `patatrac` code should feel like controlling a graphic design software; the scene is built step by step. The real-time compilation offered by Typst really conveys this feeling. At the same time, this is not what you get when using graphic libraries directly: commands correspond to draw calls and this pushes you to make somewhat elaborate calculations to determine upfront where everything should be.
 
-Crucially, a feature that no respectable graphic design software lacks is _snapping_: when dragging elements around, this feature makes it easy to place objects in perfect contact with each other. We borrowed this concept and turned it into `place`ing, `match`ing and `stick`ing. Already in the earliest stages, this choice proved fruitful. In fact, code written with `patatrack` was expressive enough to be almost always non-destructive, meaning that tuning values at the start of the code would not break the final picture.
+Crucially, a feature that no respectable graphic design software lacks is _snapping_: when dragging elements around, this feature makes it easy to place objects in perfect contact with each other. We borrowed this concept and turned it into `place`ing, `match`ing and `stick`ing. Already in the earliest stages, this choice proved fruitful. In fact, code written with `patatrac` was expressive enough to be almost always non-destructive, meaning that tuning values at the start of the code would not break the final picture.
 
-We made the decision to keep composition and rendering (styling) completely separate. This was motivated by the observation that the best and fastest way of styling a diagram is most often messy; there are just too many options that have to be specified. Surely taming this chaos is something `patatrack` should try its best at, but we acknowledge that this messiness is fine as long as it doesn't creep into the logic used for composition. 
+We made the decision to keep composition and rendering (styling) completely separate. This was motivated by the observation that the best and fastest way of styling a diagram is most often messy; there are just too many options that have to be specified. Surely taming this chaos is something `patatrac` should try its best at, but we acknowledge that this messiness is fine as long as it doesn't creep into the logic used for composition. 
 
-With this discussion, we hoped to establish clear design principles to follow going forward. Any advice or critique is not only welcomed but encouraged: just open an issue on #link("https://github.com/ZaninDavide/patatrac")[github]. If you are ready, why don't you move on to our decidedly more colloquial tutorial? Have fun doing physics!
+With this discussion, we hoped to establish clear design principles to follow going forward. Any advice or critique is not only welcomed but encouraged: just open an issue on #link("https://github.com/ZaninDavide/patatrac")[GitHub]. If you are ready, why don't you move on to our decidedly more colloquial tutorial? Have fun doing physics!
 
 = Tutorial
 In this tutorial we will assume that `cetz` is the rendering engine of choice, which at the moment is the only one supported out of the box. The goal is to draw the figure below: two boxes connected by a spring laying on a sloped surface. 
@@ -167,7 +167,7 @@ In this tutorial we will assume that `cetz` is the rendering engine of choice, w
 Let's start with the boilerplate required to import `patatrac` and set up a canvas. Under the namespace `patatrac.cetz`, the package exposes a complete `cetz` version plus all cetz-based renderers.
 
 ```typ
-#import "@preview/patatrac:0.0.0"
+#import "@preview/patatrac:0.5.0"
 
 #patatrac.cetz.canvas(length: 0.5mm, {
   import patatrac: *
@@ -384,7 +384,7 @@ draw(B, fill: blue)
 ```
 Here is the full code.
 ```typ
-#import "@preview/patatrac:0.0.0"
+#import "@preview/patatrac:0.5.0"
 
 #patatrac.cetz.canvas(length: 0.5mm, {
   import patatrac: *
@@ -413,7 +413,7 @@ Here is the full code.
 ```
 
 
-Okay, now that we have the final drawing we can spend a few words to clarify what's going on. Read @system to understand better.
+Okay, now that we have the final drawing we can spend a few words clarifying what's going on. Read @system to understand better.
 
 #set enum(spacing: 15pt, indent: 15pt)
 #set list(spacing: 15pt, indent: 15pt)
@@ -494,6 +494,27 @@ let my-renderer = renderer(cetz.standard("functions") + (
   circle: (obj, style) => { ... }
 ))
 ```
+
+== Grouping
+Currently, `patatrac` provides very basic grouping capabilities. This may change in the future, but -- at the moment -- a group is simply an array of objects. Unless specified otherwise, every function that can take an object as input can also take a group of objects. The group is treated as a rigid entity whose active anchor is the active anchor of the first object in the group.
+```typc
+let A = rect(30, 20)
+let B = place(rect(10, 10)("bl"), A("tl"))
+let G = (A("bl"), B)
+G = rotate(G, 30deg)
+draw(G)
+draw(axes(A("bl"), 40, 40))
+```
+#canvas({
+  import patatrac: *
+  let draw = cetz.standard()
+  let A = rect(30, 20)
+  let B = place(rect(10, 10)("bl"), A("tl"))
+  let G = (A("bl"), B)
+  G = rotate(G, 30deg)
+  draw(G)
+  draw(axes(A("bl"), 40, 40))
+})
 
 #pagebreak()
 
@@ -646,7 +667,7 @@ point((50,0,30deg), rot: false)
   debug(a, b)
 })
 
-_Suggestion_: The `cetz.standard()` renderer let's you assign a label to a point. You can use this feature to place text into the scene.
+_Suggestion_: The `cetz.standard()` renderer lets you assign a label to a point. You can use this feature to place text into the scene.
 
 == Ropes <rope>
 The main idea behind how ropes work is the following:
@@ -840,7 +861,7 @@ Here is the list of all object constructors. These are all available directly un
 Here is the list of all object related functions. These are all available directly under the namespace `patatrac`.
 #list(..doc("src/objects/object.typ", descriptions: true, labels: true))
 
-== Anchors related functions
+== All anchors related functions
 Under the namespace `patatrac.anchors` you can find
 
 #list(..doc("src/anchors.typ", descriptions: true))

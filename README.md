@@ -2,7 +2,7 @@
 With this [Typst](https://typst.app) package drawing physics diagrams is faster than ever! No cumbersome trigonometry required! Get started with the introductory tutorial inside the [manual](https://github.com/ZaninDavide/patatrac/blob/main/manual.pdf).
 
 ```typ
-#import "@preview/patatrac:0.0.0"
+#import "@preview/patatrac:0.5.0"
 
 #patatrac.cetz.canvas({
   import patatrac: *

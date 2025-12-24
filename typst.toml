@@ -1,13 +1,13 @@
 [package]
 name = "patatrac"
-version = "0.0.0"
+version = "0.5.0"
 compiler = "0.14.1"
 entrypoint = "src/lib.typ"
 authors = ["Davide Zanin <https://github.com/ZaninDavide>"]
-license = "Apache-2.0"
+license = "LGPL-3.0-or-later"
 description = "A powerful and user-friendly Typst package for drawing physics diagrams."
 repository = "https://github.com/ZaninDavide/patatrac"
-keywords = ["physics", "diagrams", "drawing", "rigid-bodies"]
+keywords = ["physics", "diagrams", "drawing", "draw"]
 categories = ["visualization"]
 disciplines = ["physics", "engineering", "education"]
-exclude = ["docs.pdf", "docs.typ", "/gallery/*"]
+exclude = ["manual.pdf", "manual.typ", "/gallery/*"]
